@@ -1,5 +1,6 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 import { GetcourseApiService } from './getcourse_api.service';
+import { Cron } from '@nestjs/schedule';
 
 @Controller('getcourse')
 export class GetcourseApiController {
@@ -7,6 +8,7 @@ export class GetcourseApiController {
   constructor(private readonly getcourseApiService: GetcourseApiService) {}
 
   @Get('create')
+  @Cron('01 21 * * *')
   async createExportId() {
     try {
       this.logger.log(
@@ -18,6 +20,7 @@ export class GetcourseApiController {
   }
 
   @Get('export')
+  @Cron('01 22 * * *')
   async makeExportById() {
     try {
       const findedExports =
