@@ -18,4 +18,24 @@ export class GetcourseApiController {
     const data = await this.getcourseApiService.requestSales(month);
     return await this.getcourseApiService.writeExportData(data);
   }
+
+  @Get('id')
+  async getId() {
+    const response = await this.getcourseApiService.requestExportId();
+    return await this.getcourseApiService.createExportId(response, 3, 60000);
+  }
+
+  @Get('data')
+  async getData() {
+    try {
+      const findedExports =
+        await this.getcourseApiService.findByStatus('creating');
+      if (!findedExports) {
+        console.log('Экспортов для выгрузки не найдено');
+      }
+      this.getcourseApiService.exportDataFromExports(findedExports);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
