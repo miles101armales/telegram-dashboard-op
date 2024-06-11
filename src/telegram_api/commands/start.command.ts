@@ -15,29 +15,25 @@ export class StartCommand extends Command {
   }
   handle(): void {
     this.client.start(async (ctx) => {
-      const username = ctx.from.username;
-      const user = {
-        name: ctx.from.first_name + ' ' + ctx.from.last_name,
-        username,
-      };
+      // const username = ctx.from.username;
+      // const user = {
+      //   name: ctx.from.first_name + ' ' + ctx.from.last_name,
+      //   username,
+      // };
 
-      const authorization = await this.telegramRepository.findOne({
-        where: { username },
-      });
-      if (!authorization) {
-        await this.telegramRepository.save(user);
-      }
-      if (authorization.authorization === false) {
-        ctx.replyWithHTML('<b>Авторизация</b>\n\nВведите вашу почту:');
-        this.client.hears(
-          /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|mail\.ru)$/,
-          (ctx) => {
-            this.session(ctx);
-          },
-        );
-      } else {
-        this.session(ctx);
-      }
+      // await this.telegramRepository.save(user);
+
+      // if (authorization.authorization === false) {
+      //   ctx.replyWithHTML('<b>Авторизация</b>\n\nВведите вашу почту:');
+      //   this.client.hears(
+      //     /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|mail\.ru)$/,
+      //     (ctx) => {
+      //       this.session(ctx);
+      //     },
+      //   );
+      // } else {
+      this.session(ctx);
+      // }
     });
   }
 
@@ -46,11 +42,6 @@ export class StartCommand extends Command {
       reply_markup: {
         inline_keyboard: [
           [{ text: 'Leaderboard🥇', callback_data: 'leaderboard' }],
-          [
-            { text: 'Личный план', callback_data: 'personal_goal' },
-            { text: 'План команды', callback_data: 'team_goal' },
-          ],
-          [{ text: 'Оставить ОС', callback_data: 'revision' }],
         ],
       },
     });

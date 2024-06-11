@@ -87,7 +87,7 @@ export class SalesPlanService {
       // Если вам нужно сохранить другие продажи в другой переменной в базе данных, добавьте соответствующее поле
       await this.managersRepository.update(
         { name: manager.name },
-        { hot_monthly_sales: other_sales, quantityOfSales }, // Добавьте это поле в сущность Manager, если необходимо
+        { hot_monthly_sales: other_sales }, // Добавьте это поле в сущность Manager, если необходимо
       );
     }
   }

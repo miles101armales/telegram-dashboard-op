@@ -7,6 +7,7 @@ export class GetcourseApiController {
   private readonly logger = new Logger(GetcourseApiController.name);
   constructor(private readonly getcourseApiService: GetcourseApiService) {}
 
+  @Cron('30 22 * * *')
   @Get('getsales')
   async getSalesFromDatabase() {
     const now = new Date();
