@@ -7,30 +7,14 @@ export class GetcourseApiController {
   private readonly logger = new Logger(GetcourseApiController.name);
   constructor(private readonly getcourseApiService: GetcourseApiService) {}
 
-  @Get('create')
-  @Cron('01 21 * * *')
-  async createExportId() {
-    try {
-      this.logger.log(
-        'Создаем ID экспорта запросов в геткурс и записываем в БД экспортов',
-      );
-      this.getcourseApiService.createRequest();
-    } catch (error) {}
-    return;
-  }
-
-  @Get('export')
-  @Cron('01 22 * * *')
-  async makeExportById() {
-    try {
-      const findedExports =
-        await this.getcourseApiService.findByStatus('creating');
-      if (!findedExports) {
-        console.log('Экспортов для выгрузки не найдено');
-      }
-      this.getcourseApiService.exportDataFromExports(findedExports);
-    } catch (error) {
-      console.error(error);
-    }
+  @Get('getsales')
+  async getSalesFromDatabase() {
+    const now = new Date();
+    const month = (now.getMonth() + 1).toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false,
+    });
+    const data = await this.getcourseApiService.requestSales(month);
+    return await this.getcourseApiService.writeExportData(data);
   }
 }

@@ -26,109 +26,45 @@ export class GetcourseApiService {
     this.nowDateGc = now.toISOString().split('T')[0];
   }
 
-  async createRequest(): Promise<GetcourseApi> {
-    const response = await this.requestExportId();
-    return await this.createExportId(response, 3, 60000);
-  }
-
-  async requestExportId() {
+  async requestSales(month: string) {
     try {
-      const apiKey = this.configService.get('GC_API_KEY');
-      const PREFIX = this.configService.get('GC_PREFIX');
+      const PREFIX = this.configService.get('DB_PREFIX');
       const result = await axios.get(
         // `${PREFIX}/deals?key=${apiKey}&created_at[from]=${this.agoDateGc}&created_at[to]=${this.nowDateGc}`,
-        `${PREFIX}/deals?key=${apiKey}&created_at[from]=2024-06-01&created_at[to]=${this.nowDateGc}`,
+        `${PREFIX}/exports/getsales?month=${month}`,
+        // `http://31.41.155.30:3000/api/exports/getsales?month=${month}`,
       );
-      console.log('Запрос на получение Export ID отправлен');
       if (result.status == 200) {
         return result;
       } else {
-        console.error('Ошибка получения ID экспорта');
+        console.error('Ошибка получения Заказов');
       }
     } catch (error) {
       console.error(error);
-    }
-  }
-
-  async createExportId(
-    response: AxiosResponse,
-    maxRetries: number,
-    delayMs: number,
-  ): Promise<GetcourseApi> {
-    try {
-      if (!response) {
-        console.error('Не выгружен файл экспорта');
-      }
-      if (!response.data.success) {
-        if (maxRetries > 0) {
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-          console.log(new Date(), 'Retry ', maxRetries - 1);
-          return this.createExportId(response, maxRetries - 1, delayMs);
-        } else {
-          throw new Error('Max retries exceeded');
-        }
-      }
-      const export_id = response.data.info.export_id;
-      const newExport = this.exportsRepository.save({
-        name: 'Экспорт заказов Азат',
-        export_id,
-        status: 'creating',
-      });
-      console.log('Export ID сохранен');
-      return newExport;
-    } catch (error) {
-      return;
-    }
-  }
-
-  async findByStatus(status: 'creating' | 'exported') {
-    return this.exportsRepository.find({
-      where: {
-        status,
-      },
-    });
-  }
-
-  async makeExport(export_id: number) {
-    try {
-      const apiKey = this.configService.get('GC_API_KEY');
-      const PREFIX = this.configService.get('GC_PREFIX');
-      const result = await axios.get(
-        `${PREFIX}/exports/${export_id}?key=${apiKey}`,
-      );
-      if (result.data.error && result.data.error_code === 910) {
-        await this.exportsRepository.update(
-          { id: export_id },
-          { status: 'bad_export_id' },
-        );
-        throw new Error('Файл не создан, попробуйте другой фильтр');
-      }
-      this.exportsRepository.update(
-        { export_id: export_id },
-        { status: 'exported' },
-      );
-      return result;
-    } catch (error) {
-      console.error(error);
-      return undefined;
     }
   }
 
   async writeExportData(data: AxiosResponse) {
-    const newData: string[][] = data.data.info.items;
+    const newData: string[] = data.data;
     const arrOfObjects: any[] = [];
-    newData.forEach((item) => {
-      if (Number(item[10]) !== 0) {
-        const tagItemIndex = item.length - 2;
-        arrOfObjects.push({
-          id: item[0],
-          product: item[8],
-          manager: item[19],
-          payedPrice: item[11],
-          date: item[7],
-          // tags: JSON.stringify(item[tagItemIndex]).replace(/[[\]]/g, ''),
-          tags: item[tagItemIndex],
-        });
+    newData.forEach((item: any, index) => {
+      console.log(`Processing item ${index}:`, item);
+
+      const payedPrice = Number(item.payedPrice);
+      if (payedPrice !== 0) {
+        const obj = {
+          id: item.id || 'N/A',
+          product: item.orderName || 'N/A',
+          manager: item.managerName || 'N/A',
+          payedPrice: item.payedPrice || 'N/A',
+          date: item.createdAt || 'N/A',
+          tags: item.orderTag || 'N/A',
+        };
+
+        console.log(`Constructed object:`, obj);
+        arrOfObjects.push(obj);
+      } else {
+        console.log(`Skipped item ${index} because payedPrice is 0.`);
       }
     });
 
@@ -153,19 +89,6 @@ export class GetcourseApiService {
       await Promise.all(promises);
       console.log('Processed batch of ordinary orders: ', i);
     }
-  }
-
-  async exportDataFromExports(exports: GetcourseApi[]) {
-    try {
-      for (const _export of exports) {
-        const result = await this.makeExport(_export.export_id);
-        console.log(
-          `Export data with ID: ${_export.export_id} has been exported`,
-        );
-        await this.writeExportData(result);
-      }
-    } catch (error) {
-      console.error(error);
-    }
+    return 'OK';
   }
 }
