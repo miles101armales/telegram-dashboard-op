@@ -22,7 +22,10 @@ export class StartCommand extends Command {
       });
       const user = {
         chat_id: ctx.chat.id,
-        name: ctx.from.first_name + ' ' + ctx.from.last_name,
+        name:
+          ctx.from.first_name +
+          ' ' +
+          (ctx.from.last_name ? ctx.from.last_name : ''),
         username: ctx.from.username,
       };
       if (existingUser) {
