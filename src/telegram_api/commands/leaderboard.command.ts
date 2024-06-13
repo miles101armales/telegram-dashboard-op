@@ -51,8 +51,9 @@ export class LeaderboardCommand extends Command {
   formatLeaderboard(
     leaderboard: { manager: string; sales: number; plan: number }[],
   ): string {
+    const percentage_plan = (this.fact / 27360000) * 100;
     const header = 'Таблица лидеров:\n\n'; // Заголовок
-    const planfact = `План/факт: 25 000 000/${this.fact.toLocaleString()}\n\n`; // Заголовок
+    const planfact = `План/факт: 27 360 000/${this.fact.toLocaleString()} (${percentage_plan.toFixed(1)}%)\n\n`; // Заголовок
     const body = leaderboard
       .map(
         (entry, index) =>

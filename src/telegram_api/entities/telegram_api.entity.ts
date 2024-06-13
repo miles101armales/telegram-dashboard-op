@@ -6,7 +6,7 @@ export class TelegramApi {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   chat_id: number;
 
   @Column()
