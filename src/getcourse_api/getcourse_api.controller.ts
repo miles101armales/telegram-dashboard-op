@@ -16,7 +16,7 @@ export class GetcourseApiController {
       useGrouping: false,
     });
     const data = await this.getcourseApiService.requestSales(month);
-    return await this.getcourseApiService.writeExportData(data);
+    this.getcourseApiService.writeExportData(data);
   }
 
   @Get('id')

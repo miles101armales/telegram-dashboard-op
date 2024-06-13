@@ -17,14 +17,7 @@ export class GetcourseApiService {
     private readonly exportsRepository: Repository<GetcourseApi>,
     @InjectRepository(Sales)
     private readonly salesRepository: Repository<Sales>,
-  ) {
-    const now = new Date();
-    const quarterAgo = new Date(now);
-    // quarterAgo.setMonth(quarterAgo.getMonth() - 1);
-    quarterAgo.setDate(quarterAgo.getDate() - 1);
-    this.agoDateGc = quarterAgo.toISOString().split('T')[0];
-    this.nowDateGc = now.toISOString().split('T')[0];
-  }
+  ) {}
 
   async requestSales(month: string) {
     try {
@@ -49,13 +42,14 @@ export class GetcourseApiService {
     const newData: string[] = data.data;
     const arrOfObjects: any[] = [];
     newData.forEach((item: any, index) => {
-      const payedPrice = Number(item.payedPrice);
-      if (payedPrice !== 0) {
+      const payedPrice = Number(item.profit);
+      const manager = item.managerName;
+      if (payedPrice !== 0 && manager) {
         const obj = {
           id: item.id || 'N/A',
           product: item.orderName || 'N/A',
           manager: item.managerName || 'N/A',
-          payedPrice: item.payedPrice || 'N/A',
+          payedPrice: item.profit || 'N/A',
           date: item.createdAt || 'N/A',
           tags: item.orderTag || 'N/A',
         };

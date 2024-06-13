@@ -7,6 +7,9 @@ export class TelegramApi {
   id: number;
 
   @Column()
+  chat_id: number;
+
+  @Column()
   name: string;
 
   @Column()

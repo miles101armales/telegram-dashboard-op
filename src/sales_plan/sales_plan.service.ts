@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
-import { JsonContains, Like, QueryBuilder, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Sales } from './entities/sales.entity';
 
 @Injectable()
@@ -16,6 +16,7 @@ export class SalesPlanService {
   ) {}
 
   async getManagers() {
+    console.log('Start processing...');
     const sales = await this.salesRepository.find();
     for (const sale of sales) {
       const existingManager = await this.managersRepository.exists({
@@ -75,7 +76,7 @@ export class SalesPlanService {
           ? Math.round(motivation_sales / quantityOfMotivationSales)
           : 0; // Преобразование в целое число
       // Обновляем данные в базе данных
-      await this.managersRepository.update(
+      this.managersRepository.update(
         { name: manager.name },
         {
           monthly_sales: motivation_sales,
@@ -85,7 +86,7 @@ export class SalesPlanService {
       );
 
       // Если вам нужно сохранить другие продажи в другой переменной в базе данных, добавьте соответствующее поле
-      await this.managersRepository.update(
+      this.managersRepository.update(
         { name: manager.name },
         { hot_monthly_sales: other_sales }, // Добавьте это поле в сущность Manager, если необходимо
       );

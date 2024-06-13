@@ -15,23 +15,21 @@ export class StartCommand extends Command {
   }
   handle(): void {
     this.client.start(async (ctx) => {
-      // const username = ctx.from.username;
-      // const user = {
-      //   name: ctx.from.first_name + ' ' + ctx.from.last_name,
-      //   username,
-      // };
-
-      // await this.telegramRepository.save(user);
-
-      // if (authorization.authorization === false) {
-      //   ctx.replyWithHTML('<b>Авторизация</b>\n\nВведите вашу почту:');
-      //   this.client.hears(
-      //     /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|mail\.ru)$/,
-      //     (ctx) => {
-      //       this.session(ctx);
-      //     },
-      //   );
-      // } else {
+      const existingUser = await this.telegramRepository.findOne({
+        where: {
+          chat_id: ctx.chat.id,
+        },
+      });
+      const user = {
+        chat_id: ctx.chat.id,
+        name: ctx.from.first_name + ' ' + ctx.from.last_name,
+        username: ctx.from.username,
+      };
+      if (existingUser) {
+        this.telegramRepository.update({ chat_id: existingUser.chat_id }, user);
+      } else {
+        this.telegramRepository.save(user);
+      }
       this.session(ctx);
       // }
     });
