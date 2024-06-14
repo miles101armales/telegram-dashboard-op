@@ -1,21 +1,24 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Sales {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  product: string;
+  @Column({ nullable: true })
+  idAzatGc: number;
 
-  @Column()
-  manager: string;
+  @Column({ nullable: true })
+  productName: string;
 
-  @Column()
-  payedPrice: string;
+  @Column({ nullable: true })
+  managerName: string;
 
-  @Column()
-  date: string;
+  @Column({ nullable: true })
+  profit: number;
+
+  @Column({ nullable: true })
+  payedAt: Date;
 
   @Column({ nullable: true })
   tags: string;

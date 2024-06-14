@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
@@ -7,6 +7,7 @@ import { Sales } from './entities/sales.entity';
 
 @Injectable()
 export class SalesPlanService {
+  private readonly logger = new Logger(SalesPlanService.name);
   constructor(
     private readonly configService: ConfigService,
     @InjectRepository(Manager)
@@ -15,17 +16,39 @@ export class SalesPlanService {
     private readonly salesRepository: Repository<Sales>,
   ) {}
 
+  async postSale(sale: Sales) {
+    const existingSale = await this.salesRepository.findOne({
+      where: {
+        idAzatGc: sale.idAzatGc,
+      },
+    });
+
+    if (existingSale) {
+      await this.salesRepository.update(
+        { idAzatGc: existingSale.idAzatGc },
+        sale,
+      );
+      console.log(existingSale);
+      this.logger.log(`Заказ ${sale.idAzatGc} обновлен в базе данных`);
+    } else {
+      this.salesRepository.save(sale);
+      this.logger.log(`Заказ ${sale.idAzatGc} добавлен в базу данных`);
+    }
+
+    return sale;
+  }
+
   async getManagers() {
     console.log('Start processing...');
     const sales = await this.salesRepository.find();
     for (const sale of sales) {
       const existingManager = await this.managersRepository.exists({
-        where: { name: sale.manager },
+        where: { name: sale.managerName },
       });
       if (!existingManager) {
-        if (sale.manager !== '' || undefined) {
+        if (sale.managerName !== '' || undefined) {
           await this.managersRepository.save({
-            name: sale.manager,
+            name: sale.managerName,
           });
         }
       }
@@ -38,7 +61,7 @@ export class SalesPlanService {
     for (const manager of managers) {
       const sales = await this.salesRepository.find({
         where: {
-          manager: manager.name,
+          managerName: manager.name,
         },
       });
 
@@ -57,7 +80,7 @@ export class SalesPlanService {
           tag.includes('Мотивация Тест'),
         );
 
-        const pay = Math.round(Number(sale.payedPrice)); // Преобразование в целое число
+        const pay = Math.round(Number(sale.profit)); // Преобразование в целое число
 
         // Если есть соответствующие элементы, добавляем payedPrice к motivation_sales
         if (filteredTags.length > 0) {

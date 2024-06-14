@@ -31,7 +31,7 @@ import { UserModule } from './user/user.module';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         synchronize: true,
-        entities: [TelegramApi, Manager, GetcourseApi, SalesPlan, Sales],
+        entities: [TelegramApi, Manager, GetcourseApi, Sales],
         toRetry(err) {
           return false;
         },
