@@ -21,17 +21,16 @@ export class SalesPlanController {
     @Query('idAzatGc') idAzatGc: number,
     @Query('productName') productName: string,
     @Query('managerName') managerName: string,
-    @Query('profit') profit: number,
-    @Query('payedAt') payedAt: Date,
+    @Query('profit') profit: string,
   ) {
+    const id = Number(idAzatGc);
     this.salesPlanService.postSale({
-      idAzatGc,
+      idAzatGc: id,
       productName,
       managerName,
       profit,
-      payedAt,
+      payedAt: new Date(),
       tags: 'Мотивация тест',
-      id: 0,
     });
   }
 

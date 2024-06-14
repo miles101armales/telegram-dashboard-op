@@ -15,7 +15,7 @@ export class Sales {
   managerName: string;
 
   @Column({ nullable: true })
-  profit: number;
+  profit: string;
 
   @Column({ nullable: true })
   payedAt: Date;

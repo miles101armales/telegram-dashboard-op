@@ -16,7 +16,7 @@ export class SalesPlanService {
     private readonly salesRepository: Repository<Sales>,
   ) {}
 
-  async postSale(sale: Sales) {
+  async postSale(sale) {
     const existingSale = await this.salesRepository.findOne({
       where: {
         idAzatGc: sale.idAzatGc,
@@ -46,11 +46,9 @@ export class SalesPlanService {
         where: { name: sale.managerName },
       });
       if (!existingManager) {
-        if (sale.managerName !== '' || undefined) {
-          await this.managersRepository.save({
-            name: sale.managerName,
-          });
-        }
+        await this.managersRepository.save({
+           name: sale.managerName,
+        });
       }
     }
   }
@@ -66,39 +64,15 @@ export class SalesPlanService {
       });
 
       let quantityOfMotivationSales = 0;
-      let quantityOfSales = 0;
       let motivation_sales = 0; // Переменная для хранения суммы по "Мотивация Тест"
-      let other_sales = 0; // Переменная для хранения суммы по остальным тегам
 
       for (const sale of sales) {
-        // Преобразуем строку tags в массив и фильтруем нужные элементы
-        const cleanedTagsString = sale.tags.replace(/{|}/g, '');
-        const tagsArray = cleanedTagsString
-          .split('","')
-          .map((tag) => tag.replace(/^"|"$/g, ''));
-        const filteredTags = tagsArray.filter((tag) =>
-          tag.includes('Мотивация Тест'),
-        );
-
-        const pay = Math.round(Number(sale.profit)); // Преобразование в целое число
-
-        // Если есть соответствующие элементы, добавляем payedPrice к motivation_sales
-        if (filteredTags.length > 0) {
-          motivation_sales += pay;
-          quantityOfMotivationSales += 1;
-        } else {
-          // Если нет соответствующих элементов, добавляем payedPrice к other_sales
-          other_sales += pay;
-          quantityOfSales += 1;
-        }
+        motivation_sales += Number(sale.profit);
+        quantityOfMotivationSales += 1;
       }
 
-      // Проверка на деление на ноль и вычисление среднего значения
-      const avgPayedPrice =
-        quantityOfMotivationSales > 0
-          ? Math.round(motivation_sales / quantityOfMotivationSales)
-          : 0; // Преобразование в целое число
-      // Обновляем данные в базе данных
+      const avgPayedPrice = motivation_sales / quantityOfMotivationSales;
+
       this.managersRepository.update(
         { name: manager.name },
         {
@@ -106,12 +80,6 @@ export class SalesPlanService {
           quantityOfSales: quantityOfMotivationSales,
           avgPayedPrice: Math.round(avgPayedPrice),
         }, // Замените monthly_sales на нужное поле, если требуется
-      );
-
-      // Если вам нужно сохранить другие продажи в другой переменной в базе данных, добавьте соответствующее поле
-      this.managersRepository.update(
-        { name: manager.name },
-        { hot_monthly_sales: other_sales }, // Добавьте это поле в сущность Manager, если необходимо
       );
     }
   }
