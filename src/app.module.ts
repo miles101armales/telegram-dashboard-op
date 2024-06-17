@@ -13,6 +13,7 @@ import { GetcourseApi } from './getcourse_api/entities/getcourse_api.entity';
 import { SalesPlan } from './sales_plan/entities/sales_plan.entity';
 import { Sales } from './sales_plan/entities/sales.entity';
 import { UserModule } from './user/user.module';
+import { AllSales } from './sales_plan/entities/all-sales.entity';
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { UserModule } from './user/user.module';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         synchronize: true,
-        entities: [TelegramApi, Manager, GetcourseApi, Sales],
+        entities: [TelegramApi, Manager, GetcourseApi, Sales, AllSales],
         toRetry(err) {
           return false;
         },

@@ -1,13 +1,7 @@
 export class CreateSaleDto {
-  id: number;
+  idAzatGc: number;
 
-  product: string;
+  profit: string;
 
-  manager: string;
-
-  payedPrice: string;
-
-  date: string;
-
-  tags: string;
+  managerName: string;
 }

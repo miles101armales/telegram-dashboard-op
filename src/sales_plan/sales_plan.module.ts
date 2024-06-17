@@ -4,10 +4,15 @@ import { SalesPlanController } from './sales_plan.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
 import { Sales } from './entities/sales.entity';
+import { GetcourseApiService } from 'src/getcourse_api/getcourse_api.service';
+import { AllSales } from './entities/all-sales.entity';
+import { GetcourseApiModule } from 'src/getcourse_api/getcourse_api.module';
+import { GetcourseApiController } from 'src/getcourse_api/getcourse_api.controller';
+import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Manager, Sales])],
+  imports: [TypeOrmModule.forFeature([Manager, Sales, AllSales, GetcourseApi])],
   controllers: [SalesPlanController],
-  providers: [SalesPlanService],
+  providers: [SalesPlanService, GetcourseApiService],
 })
 export class SalesPlanModule {}

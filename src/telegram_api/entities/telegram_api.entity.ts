@@ -7,7 +7,7 @@ export class TelegramApi {
   id: number;
 
   @Column({ nullable: true })
-  chat_id: number;
+  chat_id: string;
 
   @Column()
   name: string;
@@ -19,6 +19,5 @@ export class TelegramApi {
   authorization?: boolean;
 
   @Column({ nullable: true })
-  @OneToOne(() => Manager, (manager) => manager.telegram)
   manager?: string;
 }

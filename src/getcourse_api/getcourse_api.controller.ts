@@ -7,41 +7,23 @@ export class GetcourseApiController {
   private readonly logger = new Logger(GetcourseApiController.name);
   constructor(private readonly getcourseApiService: GetcourseApiService) {}
 
-  // УСТАРЕВШАЯ ЗАГРУЗКА ДАННЫХ ПО ЗАКАЗУ ИЗ БД ИЛЬМИРА
+  @Get('id')
+  async getId() {
+    const response = await this.getcourseApiService.requestExportId();
+    return await this.getcourseApiService.createExportId(response, 3, 60000);
+  }
 
-  // @Cron('30 22 * * *')
-  // @Get('getsales')
-  // async getSalesFromDatabase() {
-  //   const now = new Date();
-  //   const month = (now.getMonth() + 1).toLocaleString('en-US', {
-  //     minimumIntegerDigits: 2,
-  //     useGrouping: false,
-  //   });
-  //   const data = await this.getcourseApiService.requestSales(month);
-  //   this.getcourseApiService.writeExportData(data);
-  // }
-
-  // УСТАРЕВШИЙ ЗАПРОС НА ПОЛУЧЕНИЕ ID ЭКСПОРТА
-
-  // @Get('id')
-  // async getId() {
-  //   const response = await this.getcourseApiService.requestExportId();
-  //   return await this.getcourseApiService.createExportId(response, 3, 60000);
-  // }
-
-  // УСТАРЕВШИЙ ЗАПРОС НА ПОЛУЧЕНИЕ ДАННЫХ ПО ID ЭКСПОРТА
-
-  // @Get('data')
-  // async getData() {
-  //   try {
-  //     const findedExports =
-  //       await this.getcourseApiService.findByStatus('creating');
-  //     if (!findedExports) {
-  //       console.log('Экспортов для выгрузки не найдено');
-  //     }
-  //     this.getcourseApiService.exportDataFromExports(findedExports);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // }
+  @Get('data')
+  async getData() {
+    try {
+      const findedExports =
+        await this.getcourseApiService.findByStatus('creating');
+      if (!findedExports) {
+        console.log('Экспортов для выгрузки не найдено');
+      }
+      this.getcourseApiService.exportDataFromExports(findedExports);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }

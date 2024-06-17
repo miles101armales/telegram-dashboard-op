@@ -1,4 +1,4 @@
-import { Telegraf } from 'telegraf';
+import { Markup, Telegraf } from 'telegraf';
 import { Command } from '../classes/command.class';
 import { MyContext } from '../interfaces/context.interface';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,11 +17,11 @@ export class StartCommand extends Command {
     this.client.start(async (ctx) => {
       const existingUser = await this.telegramRepository.findOne({
         where: {
-          chat_id: ctx.chat.id,
+          chat_id: ctx.chat.id.toString(),
         },
       });
       const user = {
-        chat_id: ctx.chat.id,
+        chat_id: ctx.chat.id.toString(),
         name:
           ctx.from.first_name +
           ' ' +
@@ -29,22 +29,47 @@ export class StartCommand extends Command {
         username: ctx.from.username,
       };
       if (existingUser) {
-        this.telegramRepository.update({ chat_id: existingUser.chat_id }, user);
+        await this.telegramRepository.update(
+          { chat_id: existingUser.chat_id },
+          user,
+        );
       } else {
-        this.telegramRepository.save(user);
+        await this.telegramRepository.save(user);
       }
       this.session(ctx);
       // }
     });
   }
 
-  session(ctx: MyContext): void {
-    ctx.reply('Выберите команду:', {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: 'Leaderboard🥇', callback_data: 'leaderboard' }],
-        ],
-      },
+  async session(ctx: MyContext): Promise<void> {
+    const authStatus = await this.telegramRepository.findOne({
+      where: { chat_id: ctx.chat?.id.toString() },
     });
+    if (authStatus.authorization) {
+      ctx.reply('Выберите команду:', {
+        reply_markup: {
+          keyboard: [
+            [{ text: '🏆Таблица лидеров🏆' }],
+            [{ text: 'Мои закрытия' }, { text: 'Моя команда' }],
+            [{ text: '🔼Сменить аккаунт🔼' }],
+          ],
+          resize_keyboard: true,
+        },
+      });
+    } else {
+      ctx.reply(
+        'Запрос на авторизацию отправлен. Вам придет уведомление о готовности.\n\nОжидайте🆔...',
+        {
+          reply_markup: {
+            keyboard: [[{ text: '👤Авторизация👤' }]],
+            resize_keyboard: true,
+          },
+        },
+      );
+      this.client.telegram.sendMessage(
+        1810423951,
+        `Пользователь @${ctx.from.username} отправил запрос на авторизацию`,
+      );
+    }
   }
 }

@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
 import { Repository } from 'typeorm';
 import { TelegramApi } from './entities/telegram_api.entity';
+import { AuthCommand } from './commands/authorization.command';
 
 @Injectable()
 export class TelegramApiService {
@@ -31,11 +32,16 @@ export class TelegramApiService {
       this.configService.get('TELEGRAM_API_KEY'),
     );
   }
-  onApplicationBootstrap() {
+  async onApplicationBootstrap() {
     try {
       this.commands = [
         new StartCommand(this.client, this.telegramRepository),
         new LeaderboardCommand(this.client, this.managersRepository),
+        new AuthCommand(
+          this.client,
+          this.managersRepository,
+          this.telegramRepository,
+        ),
       ];
       for (const command of this.commands) {
         command.handle();
@@ -53,6 +59,15 @@ export class TelegramApiService {
 
       this.client.launch();
       this.logger.log('Telegram Bot initialized');
+      const clients = await this.telegramRepository.find();
+      for (const _client of clients) {
+        if (_client.manager && _client.authorization === false) {
+          this.client.telegram.sendMessage(
+            _client.chat_id,
+            'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
+          );
+        }
+      }
     } catch (error) {}
   }
 }

@@ -16,14 +16,7 @@ export class Manager {
   name: string;
 
   @Column({ nullable: true })
-  @OneToOne(() => TelegramApi, (telegram_client) => telegram_client.manager)
-  telegram: string;
-
-  @Column({ nullable: true })
   monthly_sales: number;
-
-  @Column({ nullable: true })
-  hot_monthly_sales: number;
 
   @Column({ nullable: true })
   personal_monthly_goal: string;
