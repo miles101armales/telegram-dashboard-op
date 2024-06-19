@@ -15,7 +15,7 @@ export class ManagersService {
   async calculateSalary() {
     const managers = await this.managersRepository.find();
     for (const manager of managers) {
-      const salary = Number(manager.monthly_sales) * 0.05 + 15000;
+      const salary = Number(manager.monthly_sales) * 0.05;
       this.managersRepository.update(
         { name: manager.name },
         { salary: Number(salary.toFixed(0)) },

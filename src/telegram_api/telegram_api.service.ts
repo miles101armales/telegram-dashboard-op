@@ -11,6 +11,7 @@ import { Manager } from 'src/managers/entities/manager.entity';
 import { Repository } from 'typeorm';
 import { TelegramApi } from './entities/telegram_api.entity';
 import { AuthCommand } from './commands/authorization.command';
+import { MySalesCommand } from './commands/my-sales.command';
 
 @Injectable()
 export class TelegramApiService {
@@ -36,12 +37,13 @@ export class TelegramApiService {
     try {
       this.commands = [
         new StartCommand(this.client, this.telegramRepository),
-        new LeaderboardCommand(this.client, this.managersRepository),
+        new LeaderboardCommand(this.client, this.managersRepository,this.telegramRepository),
         new AuthCommand(
           this.client,
           this.managersRepository,
           this.telegramRepository,
         ),
+        new MySalesCommand(this.client, this.managersRepository,this.telegramRepository),
       ];
       for (const command of this.commands) {
         command.handle();
@@ -67,6 +69,7 @@ export class TelegramApiService {
             'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
           );
         }
+        // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\nТакже добавлена возможность изменять свои личный план во вкладке "Мои закрытия", а также смотреть свой план/факт\n')
       }
     } catch (error) {}
   }

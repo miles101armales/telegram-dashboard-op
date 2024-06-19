@@ -51,7 +51,6 @@ export class StartCommand extends Command {
           keyboard: [
             [{ text: '🏆Таблица лидеров🏆' }],
             [{ text: 'Мои закрытия' }, { text: 'Моя команда' }],
-            [{ text: '🔼Сменить аккаунт🔼' }],
           ],
           resize_keyboard: true,
         },

@@ -42,7 +42,6 @@ export class SalesPlanService {
   }
 
   async getManagers() {
-    console.log('Start processing...');
     const sales = await this.salesRepository.find();
     for (const sale of sales) {
       const existingManager = await this.managersRepository.exists({
@@ -52,6 +51,7 @@ export class SalesPlanService {
         await this.managersRepository.save({
           name: sale.managerName,
         });
+        this.logger.log(`Менеджер ${sale.managerName} сохранен.`)
       }
     }
   }

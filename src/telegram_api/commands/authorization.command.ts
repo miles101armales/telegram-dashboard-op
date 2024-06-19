@@ -89,6 +89,7 @@ export class AuthCommand extends Command {
         { chat_id: ctx.chat.id.toString() },
         { manager: null, authorization: false },
       );
+      ctx.reply('')
     });
   }
 }

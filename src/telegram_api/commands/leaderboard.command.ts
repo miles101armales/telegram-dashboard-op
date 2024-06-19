@@ -4,6 +4,7 @@ import { MyContext } from '../interfaces/context.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
 import { Repository } from 'typeorm';
+import { TelegramApi } from '../entities/telegram_api.entity';
 
 export class LeaderboardCommand extends Command {
   leaderboard: {
@@ -17,21 +18,39 @@ export class LeaderboardCommand extends Command {
     public client: Telegraf<MyContext>,
     @InjectRepository(Manager)
     private readonly managersRepository: Repository<Manager>,
+    @InjectRepository(TelegramApi)
+    private readonly telegramApiRepository: Repository<TelegramApi>,
   ) {
     super(client);
   }
 
   async handle(): Promise<void> {
     this.client.action('leaderboard', async (ctx) => {
-      this.handled(ctx);
+      const authStatus = await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) ? await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) : undefined
+      if(authStatus.authorization) {
+        this.handled(ctx);
+      } else {
+        ctx.reply('Авторизация не пройдена, /auth')
+      }
+      
     });
 
     this.client.command('leaderboard', async (ctx) => {
-      this.handled(ctx);
+      const authStatus = await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) ? await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) : undefined
+      if(authStatus.authorization) {
+        this.handled(ctx);
+      } else {
+        ctx.reply('Авторизация не пройдена, /auth')
+      }
     });
 
     this.client.hears('🏆Таблица лидеров🏆', async (ctx) => {
-      this.handled(ctx);
+      const authStatus = await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) ? await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) : undefined
+      if(authStatus.authorization) {
+        this.handled(ctx);
+      } else {
+        ctx.reply('Авторизация не пройдена, /auth')
+      }
     });
   }
 
@@ -70,13 +89,14 @@ export class LeaderboardCommand extends Command {
   ): string {
     const percentage_plan = (this.fact / 27360000) * 100;
     const header = 'Таблица лидеров:\n\n'; // Заголовок
-    const planfact = `План/факт: 27360000 / ${this.fact.toString()} (${percentage_plan.toFixed(1)}%)\n\n`; // Заголовок
+    const actualDate = 'Актуальнo на <b>19.06.2024 12:21</b>'
+    const planfact = `План/факт: <b>27360000 / ${this.fact.toString()}</b> (${percentage_plan.toFixed(1)}%)\n\n`; // Заголовок
     const body = leaderboard
       .map(
         (entry, index) =>
           `${index + 1}. <b>${entry.manager}</b>\n${entry.sales.toString()} RUB | Средний чек: ${entry.avgPayedPrice}\n`,
       )
       .join('\n');
-    return header + planfact + body;
+    return header + actualDate + '\n\n' + planfact + body;
   }
 }
