@@ -41,6 +41,38 @@ export class SalesPlanService {
     }
   }
 
+  async callbackToUpdate(sale: {
+    idAzatGc: number;
+    productName: string;
+    managerName: string;
+    profit: string;
+    payedAt: Date;
+    tags: string;
+  }) {
+    await this.allSalesRepository.save(sale);
+    const response = await this.getcourseApiService.requestExportId();
+    await this.getcourseApiService.createExportId(response, 3, 6000);
+    setTimeout(async () => {
+      const findedExports =
+        await this.getcourseApiService.findByStatus('creating');
+      if (!findedExports) {
+        console.log('Экспортов для выгрузки не найдено');
+      }
+      for (const _export of findedExports) {
+        const result = await this.getcourseApiService.makeExport(
+          _export.export_id,
+        );
+        console.log(
+          `Export data with ID: ${_export.export_id} has been exported`,
+        );
+        await this.getcourseApiService.writeExportExistData(result);
+      }
+    }, 10000);
+    setTimeout(() => {
+      this.updateSale(sale.idAzatGc);
+    }, 1000);
+  }
+
   async getManagers() {
     const sales = await this.salesRepository.find();
     for (const sale of sales) {
@@ -51,7 +83,7 @@ export class SalesPlanService {
         await this.managersRepository.save({
           name: sale.managerName,
         });
-        this.logger.log(`Менеджер ${sale.managerName} сохранен.`)
+        this.logger.log(`Менеджер ${sale.managerName} сохранен.`);
       }
     }
   }
@@ -99,6 +131,21 @@ export class SalesPlanService {
           avgPayedPrice: Math.round(avgPayedPrice),
         }, // Замените monthly_sales на нужное поле, если требуется
       );
+    }
+  }
+
+  async updateSale(idAzatGc: number) {
+    const newSale = await this.allSalesRepository.findOne({
+      where: { idAzatGc },
+    });
+
+    if (newSale) {
+      await this.salesRepository.update(
+        { idAzatGc },
+        { profit: newSale.profit },
+      );
+    } else {
+      console.log('Заказ не найден');
     }
   }
 }

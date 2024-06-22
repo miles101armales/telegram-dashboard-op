@@ -19,24 +19,24 @@ export class SalesPlanController {
 
   // НОВЫЙ КОЛБЭК НА ПОЛУЧЕНИЕ ЗАКРЫТОГО ЗАКАЗА ПО ХОЛОДКЕ
 
-  // @Get('sale')
-  // async saleMotivationCallback(
-  //   @Query('idAzatGc') idAzatGc: number,
-  //   @Query('productName') productName: string,
-  //   @Query('managerName') managerName: string,
-  //   @Query('profit') profit: string,
-  // ) {
-  //   const id = Number(idAzatGc);
-  //   this.salesPlanService.postSale({
-  //     idAzatGc: id,
-  //     productName,
-  //     managerName,
-  //     profit,
-  //     payedAt: new Date(),
-  //     tags: 'Мотивация тест',
-  //   });
-  //   return id;
-  // }
+  @Get('sale')
+  async saleMotivationCallback(
+    @Query('idAzatGc') idAzatGc: number,
+    @Query('productName') productName: string,
+    @Query('managerName') managerName: string,
+    @Query('profit') profit: string,
+  ) {
+    const id = Number(idAzatGc);
+    this.salesPlanService.callbackToUpdate({
+      idAzatGc: id,
+      productName,
+      managerName,
+      profit,
+      payedAt: new Date(),
+      tags: 'Мотивация тест',
+    });
+    return id;
+  }
 
   @Get('export')
   async export() {

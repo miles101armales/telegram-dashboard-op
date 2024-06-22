@@ -72,7 +72,7 @@ export class GetcourseApiService {
       const apiKey = this.configService.get('GC_API_KEY');
       const PREFIX = this.configService.get('GC_PREFIX');
       const result = await axios.get(
-        `${PREFIX}/deals?key=${apiKey}&created_at[from]=2024-06-01`,
+        `${PREFIX}/deals?key=${apiKey}&created_at[from]=${this.nowDateGc}`,
       );
       if (result.status == 200) {
         this.logger.log(`Request Export ID: ${result.data.info.export_id}`);

@@ -5,12 +5,18 @@ export class AllSales {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   idAzatGc: number;
 
-  @Column()
+  @Column({ nullable: true })
   profit: string;
 
   @Column({ nullable: true })
   managerName: string;
+
+  @Column({ nullable: true })
+  payedAt: Date;
+
+  @Column({ nullable: true })
+  tags: string;
 }

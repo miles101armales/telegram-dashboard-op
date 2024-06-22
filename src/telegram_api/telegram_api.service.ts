@@ -37,13 +37,21 @@ export class TelegramApiService {
     try {
       this.commands = [
         new StartCommand(this.client, this.telegramRepository),
-        new LeaderboardCommand(this.client, this.managersRepository,this.telegramRepository),
+        new LeaderboardCommand(
+          this.client,
+          this.managersRepository,
+          this.telegramRepository,
+        ),
         new AuthCommand(
           this.client,
           this.managersRepository,
           this.telegramRepository,
         ),
-        new MySalesCommand(this.client, this.managersRepository,this.telegramRepository),
+        new MySalesCommand(
+          this.client,
+          this.managersRepository,
+          this.telegramRepository,
+        ),
       ];
       for (const command of this.commands) {
         command.handle();
@@ -62,15 +70,15 @@ export class TelegramApiService {
       this.client.launch();
       this.logger.log('Telegram Bot initialized');
       const clients = await this.telegramRepository.find();
-      for (const _client of clients) {
-        if (_client.manager && _client.authorization === false) {
-          this.client.telegram.sendMessage(
-            _client.chat_id,
-            'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
-          );
-        }
-        // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n\ /start')
-      }
+      // for (const _client of clients) {
+      //   if (_client.manager && _client.authorization === false) {
+      //     this.client.telegram.sendMessage(
+      //       _client.chat_id,
+      //       'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
+      //     );
+      //   }
+      //   this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n\ /start')
+      // }
     } catch (error) {}
   }
 }
