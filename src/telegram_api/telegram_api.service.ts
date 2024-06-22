@@ -69,7 +69,7 @@ export class TelegramApiService {
             'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
           );
         }
-        // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\nТакже добавлена возможность изменять свои личный план во вкладке "Мои закрытия", а также смотреть свой план/факт\n')
+        // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n\ /start')
       }
     } catch (error) {}
   }
