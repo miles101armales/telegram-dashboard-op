@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { TelegramApi } from './entities/telegram_api.entity';
 import { AuthCommand } from './commands/authorization.command';
 import { MySalesCommand } from './commands/my-sales.command';
+import { SalesPlanService } from 'src/sales_plan/sales_plan.service';
 
 @Injectable()
 export class TelegramApiService {
@@ -19,6 +20,7 @@ export class TelegramApiService {
   private commands: Command[] = [];
   private scenes: Scene[] = [];
   private scenesNames: Scenes.WizardScene<MyContext>[] = [];
+  public updatedTime: string;
 
   private readonly logger = new Logger(TelegramApiService.name);
 
@@ -41,6 +43,7 @@ export class TelegramApiService {
           this.client,
           this.managersRepository,
           this.telegramRepository,
+          this.updatedTime
         ),
         new AuthCommand(
           this.client,
@@ -77,7 +80,7 @@ export class TelegramApiService {
       //       'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
       //     );
       //   }
-      //   this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n\ /start')
+      //   this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\nТеперь данные должны обновляться в течение 30 минут после закрытия. Если заметите нестыковку, просьба сообщить /start')
       // }
     } catch (error) {}
   }

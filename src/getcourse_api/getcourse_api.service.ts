@@ -117,52 +117,86 @@ export class GetcourseApiService {
         export_id,
         status: 'creating',
       });
+      this.logger.log('Created export')
       return newExport;
     } catch (error) {
       return;
     }
   }
 
-  async makeExport(export_id: number) {
-    try {
-      const apiKey = this.configService.get('GC_API_KEY');
-      const PREFIX = this.configService.get('GC_PREFIX');
-      const result = await axios.get(
-        `${PREFIX}/exports/${export_id}?key=${apiKey}`,
-      );
-      if (result.data.error && result.data.error_code === 910) {
+  async makeExport(export_id: number, maxRetries: number, delayMs: number) {
+    const apiKey = this.configService.get('GC_API_KEY');
+    const PREFIX = this.configService.get('GC_PREFIX');
+  
+    const makeRequest = async (): Promise<AxiosResponse | undefined> => {
+      try {
+        const result = await axios.get(`${PREFIX}/exports/${export_id}?key=${apiKey}`);
+  
+        if (result.data.error && result.data.error_code === 910) {
+          await this.exportsRepository.update(
+            { id: export_id },
+            { status: 'bad_export_id' },
+          );
+          throw new Error('Файл не создан, попробуйте другой фильтр');
+        }
+  
         await this.exportsRepository.update(
           { id: export_id },
-          { status: 'bad_export_id' },
+          { status: 'exported' },
         );
-        throw new Error('Файл не создан, попробуйте другой фильтр');
+        
+        return result;
+  
+      } catch (error) {
+        console.error(error);
+  
+        if (maxRetries > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          console.log(new Date(), 'Retry ', maxRetries - 1);
+          return makeRequest();
+        } else {
+          console.error('Max retries exceeded');
+          return undefined;
+        }
       }
-      this.exportsRepository.update(
-        { export_id: export_id },
-        { status: 'exported' },
-      );
-      return result;
-    } catch (error) {
-      console.error(error);
-      return undefined;
-    }
+    };
+  
+    return makeRequest();
   }
 
   async writeExportExistData(data: AxiosResponse) {
     const newData: string[][] = data.data.info.items;
     const realArrOfObjects: any[] = [];
+    
     newData.forEach((item) => {
-      if (Number(item[10]) !== 0) {
-        const tagItemIndex = item.length - 2;
+      const tagItemIndex = item.length - 2;
+      let tags;
+
+      try {
+          // Попытка распарсить как JSON
+          tags = JSON.parse(item[tagItemIndex]);
+        } catch (error) {
+          // Если не удалось, используем как строку
+          tags = item[tagItemIndex];
+        }
+  
+        // Приводим к массиву, если это строка
+        if (typeof tags === 'string') {
+          tags = [tags];
+        }
+
+      if (Number(item[10]) > 1 && tags.includes('Мотивация тест')) {
+        
         realArrOfObjects.push({
           idAzatGc: item[0],
           productName: item[8],
           payedAt: item[7],
-          profit: item[17],
-          tags: tagItemIndex,
+          profit: item[15],
+          tags: item[tagItemIndex],
           managerName: item[19],
         });
       }
+      this.logger.log(`Item added by export ${item[0]}`)
     });
     console.log('Количество обычных заказов: ', realArrOfObjects.length);
     const batchSize: number = 100;
@@ -171,7 +205,7 @@ export class GetcourseApiService {
       const promises = batch.map(async (item: CreateSaleDto) => {
         const existingItem = await this.salesRepository.findOne({
           where: {
-            id: item.idAzatGc,
+            idAzatGc: item.idAzatGc,
           },
         });
         if (existingItem) {
@@ -191,7 +225,7 @@ export class GetcourseApiService {
   async exportDataFromExports(exports: GetcourseApi[]) {
     try {
       for (const _export of exports) {
-        const result = await this.makeExport(_export.export_id);
+        const result = await this.makeExport(_export.export_id, 3, 10000);
         console.log(
           `Export data with ID: ${_export.export_id} has been exported`,
         );

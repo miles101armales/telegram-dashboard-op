@@ -15,8 +15,5 @@ export class AllSales {
   managerName: string;
 
   @Column({ nullable: true })
-  payedAt: Date;
-
-  @Column({ nullable: true })
   tags: string;
 }

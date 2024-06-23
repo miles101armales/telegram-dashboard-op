@@ -27,13 +27,13 @@ export class SalesPlanController {
     @Query('profit') profit: string,
   ) {
     const id = Number(idAzatGc);
-    this.salesPlanService.callbackToUpdate({
+    await this.salesPlanService.callbackToUpdate({
       idAzatGc: id,
       productName,
       managerName,
       profit,
-      payedAt: new Date(),
       tags: 'Мотивация тест',
+      payedAt: new Date().toISOString()
     });
     return id;
   }

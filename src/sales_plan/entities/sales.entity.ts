@@ -18,7 +18,7 @@ export class Sales {
   profit: string;
 
   @Column({ nullable: true })
-  payedAt: Date;
+  payedAt: string;
 
   @Column({ nullable: true })
   tags: string;

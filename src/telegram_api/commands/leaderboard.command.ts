@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
 import { Repository } from 'typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
+import { SalesPlanService } from 'src/sales_plan/sales_plan.service';
 
 export class LeaderboardCommand extends Command {
   leaderboard: {
@@ -20,6 +21,7 @@ export class LeaderboardCommand extends Command {
     private readonly managersRepository: Repository<Manager>,
     @InjectRepository(TelegramApi)
     private readonly telegramApiRepository: Repository<TelegramApi>,
+    private updatedTime: string,
   ) {
     super(client);
   }
@@ -89,7 +91,7 @@ export class LeaderboardCommand extends Command {
   ): string {
     const percentage_plan = (this.fact / 27360000) * 100;
     const header = 'Таблица лидеров:\n\n'; // Заголовок
-    const actualDate = 'Актуальнo на <b>21.06.2024 22:36</b>'
+    const actualDate = `Актуальнo на <b>${this.updatedTime}</b>`
     const planfact = `План/факт: <b>27360000 / ${this.fact.toString()}</b> (${percentage_plan.toFixed(1)}%)\n\n`; // Заголовок
     const body = leaderboard
       .map(
@@ -97,6 +99,6 @@ export class LeaderboardCommand extends Command {
           `${index + 1}. <b>${entry.manager}</b>\n${entry.sales.toString()} RUB | Средний чек: ${entry.avgPayedPrice}\n`,
       )
       .join('\n');
-    return header + actualDate + '\n\n' + planfact + body;
+    return header + planfact + body;
   }
 }

@@ -8,13 +8,14 @@ import { GetcourseApiService } from 'src/getcourse_api/getcourse_api.service';
 import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 import { AllSales } from './entities/all-sales.entity';
 import { all } from 'axios';
+import { TelegramApiService } from 'src/telegram_api/telegram_api.service';
+import { TelegramApi } from 'src/telegram_api/entities/telegram_api.entity';
 
 @Injectable()
 export class SalesPlanService {
-  private saleProfit: AllSales;
+  private readonly telegramApiService: TelegramApiService;
   private readonly logger = new Logger(SalesPlanService.name);
   constructor(
-    private readonly configService: ConfigService,
     private readonly getcourseApiService: GetcourseApiService,
     @InjectRepository(Manager)
     private readonly managersRepository: Repository<Manager>,
@@ -22,7 +23,10 @@ export class SalesPlanService {
     private readonly salesRepository: Repository<Sales>,
     @InjectRepository(AllSales)
     private readonly allSalesRepository: Repository<AllSales>,
-  ) {}
+    
+  ) {
+
+  }
 
   async postSale() {
     const findedExports =
@@ -32,7 +36,7 @@ export class SalesPlanService {
     }
     for (const _export of findedExports) {
       const result = await this.getcourseApiService.makeExport(
-        _export.export_id,
+        _export.export_id, 3, 10000
       );
       console.log(
         `Export data with ID: ${_export.export_id} has been exported`,
@@ -46,10 +50,11 @@ export class SalesPlanService {
     productName: string;
     managerName: string;
     profit: string;
-    payedAt: Date;
+    payedAt: string;
     tags: string;
   }) {
-    await this.allSalesRepository.save(sale);
+    this.logger.log(`New sale callback to update with id: ${sale.idAzatGc}`)
+    await this.salesRepository.save(sale);
     const response = await this.getcourseApiService.requestExportId();
     await this.getcourseApiService.createExportId(response, 3, 6000);
     setTimeout(async () => {
@@ -60,17 +65,17 @@ export class SalesPlanService {
       }
       for (const _export of findedExports) {
         const result = await this.getcourseApiService.makeExport(
-          _export.export_id,
+          _export.export_id, 3, 10000
         );
         console.log(
           `Export data with ID: ${_export.export_id} has been exported`,
         );
         await this.getcourseApiService.writeExportExistData(result);
+        await this.updateSale(sale.idAzatGc);
+        await this.getManagers();
+        await this.getMonthlySales();
       }
-    }, 10000);
-    setTimeout(() => {
-      this.updateSale(sale.idAzatGc);
-    }, 1000);
+    }, 120000);
   }
 
   async getManagers() {
@@ -144,8 +149,25 @@ export class SalesPlanService {
         { idAzatGc },
         { profit: newSale.profit },
       );
+      this.logger.log(`Sale updated. ID: ${idAzatGc}`)
     } else {
       console.log('Заказ не найден');
     }
+  }
+
+  async getFormattedDate() {
+    const now = new Date();
+  
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // January is 0!
+    const year = now.getFullYear();
+  
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+    this.telegramApiService.updatedTime = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`
+
+    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
   }
 }
