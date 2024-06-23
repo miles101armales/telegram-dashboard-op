@@ -5,8 +5,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
 import { Repository } from 'typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
+import { Logger } from '@nestjs/common';
 
 export class AuthCommand extends Command {
+  private readonly logger = new Logger(AuthCommand.name);
   constructor(
     public client: Telegraf<MyContext>,
     @InjectRepository(Manager)
@@ -36,24 +38,6 @@ export class AuthCommand extends Command {
   }
 
   async handled(ctx): Promise<void> {
-    // ctx.reply('Для авторизации введите вашу почту GetCourse');
-    // this.client.hears(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, async (ctx) => {
-    //   const authMail = ctx.msg.text;
-    //   const existingClient = await this.managersRepository.findOne({
-    //     where: { auth_mail: authMail },
-    //   });
-
-    //   if (existingClient) {
-    //     this.telegramApiRepository.update(
-    //       { username: ctx.from.username },
-    //       { manager: existingClient.name, authorization: true },
-    //     );
-    //   }
-
-    //   if (!existingClient) {
-    //     ctx.reply('Неверная почта. Вас нет в базе данных, введите другую');
-    //   }
-    // });
     const existingClient = await this.telegramApiRepository.findOne({
       where: { chat_id: ctx.chat.id },
     });
@@ -89,7 +73,7 @@ export class AuthCommand extends Command {
         { chat_id: ctx.chat.id.toString() },
         { manager: null, authorization: false },
       );
-      ctx.reply('')
+      ctx.reply('');
     });
   }
 }

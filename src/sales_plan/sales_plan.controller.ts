@@ -33,7 +33,7 @@ export class SalesPlanController {
       managerName,
       profit,
       tags: 'Мотивация тест',
-      payedAt: new Date().toISOString()
+      payedAt: new Date().toISOString(),
     });
     return id;
   }

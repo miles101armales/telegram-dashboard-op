@@ -6,8 +6,10 @@ import { Manager } from 'src/managers/entities/manager.entity';
 import { Repository } from 'typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { SalesPlanService } from 'src/sales_plan/sales_plan.service';
+import { Logger } from '@nestjs/common';
 
 export class LeaderboardCommand extends Command {
+  private readonly logger = new Logger(LeaderboardCommand.name);
   leaderboard: {
     manager: string;
     sales: number;
@@ -28,35 +30,53 @@ export class LeaderboardCommand extends Command {
 
   async handle(): Promise<void> {
     this.client.action('leaderboard', async (ctx) => {
-      const authStatus = await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) ? await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) : undefined
-      if(authStatus.authorization) {
+      const authStatus = (await this.telegramApiRepository.findOne({
+        where: { chat_id: ctx.chat.id.toString() },
+      }))
+        ? await this.telegramApiRepository.findOne({
+            where: { chat_id: ctx.chat.id.toString() },
+          })
+        : undefined;
+      if (authStatus.authorization) {
         this.handled(ctx);
       } else {
-        ctx.reply('Авторизация не пройдена, /auth')
+        ctx.reply('Авторизация не пройдена, /auth');
       }
-      
     });
 
     this.client.command('leaderboard', async (ctx) => {
-      const authStatus = await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) ? await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) : undefined
-      if(authStatus.authorization) {
+      const authStatus = (await this.telegramApiRepository.findOne({
+        where: { chat_id: ctx.chat.id.toString() },
+      }))
+        ? await this.telegramApiRepository.findOne({
+            where: { chat_id: ctx.chat.id.toString() },
+          })
+        : undefined;
+      if (authStatus.authorization) {
         this.handled(ctx);
       } else {
-        ctx.reply('Авторизация не пройдена, /auth')
+        ctx.reply('Авторизация не пройдена, /auth');
       }
     });
 
     this.client.hears('🏆Таблица лидеров🏆', async (ctx) => {
-      const authStatus = await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) ? await this.telegramApiRepository.findOne({where: {chat_id: ctx.chat.id.toString()}}) : undefined
-      if(authStatus.authorization) {
+      const authStatus = (await this.telegramApiRepository.findOne({
+        where: { chat_id: ctx.chat.id.toString() },
+      }))
+        ? await this.telegramApiRepository.findOne({
+            where: { chat_id: ctx.chat.id.toString() },
+          })
+        : undefined;
+      if (authStatus.authorization) {
         this.handled(ctx);
       } else {
-        ctx.reply('Авторизация не пройдена, /auth')
+        ctx.reply('Авторизация не пройдена, /auth');
       }
     });
   }
 
-  async handled(ctx): Promise<void> {
+  async handled(ctx: MyContext) {
+    this.logger.log(`${ctx.from.username}`);
     this.leaderboard = [];
     this.fact = 0;
     const managers = await this.managersRepository.find();
@@ -69,7 +89,6 @@ export class LeaderboardCommand extends Command {
           plan: (manager.monthly_sales / 1500000) * 100,
           avgPayedPrice: manager.avgPayedPrice,
         });
-        console.log((this.fact += manager.monthly_sales));
       }
     }
     // Сортировка массива по переменной sales в порядке убывания
@@ -91,7 +110,7 @@ export class LeaderboardCommand extends Command {
   ): string {
     const percentage_plan = (this.fact / 27360000) * 100;
     const header = 'Таблица лидеров:\n\n'; // Заголовок
-    const actualDate = `Актуальнo на <b>${this.updatedTime}</b>`
+    const actualDate = `Актуальнo на <b>${this.updatedTime}</b>`;
     const planfact = `План/факт: <b>27360000 / ${this.fact.toString()}</b> (${percentage_plan.toFixed(1)}%)\n\n`; // Заголовок
     const body = leaderboard
       .map(

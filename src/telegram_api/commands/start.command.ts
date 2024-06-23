@@ -4,8 +4,10 @@ import { MyContext } from '../interfaces/context.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { Repository } from 'typeorm';
+import { Logger } from '@nestjs/common';
 
 export class StartCommand extends Command {
+  private readonly logger = new Logger(StartCommand.name);
   constructor(
     public client: Telegraf<MyContext>,
     @InjectRepository(TelegramApi)
@@ -42,6 +44,7 @@ export class StartCommand extends Command {
   }
 
   async session(ctx: MyContext): Promise<void> {
+    this.logger.log(`${ctx.from.username} запустил комманду /start`);
     const authStatus = await this.telegramRepository.findOne({
       where: { chat_id: ctx.chat?.id.toString() },
     });

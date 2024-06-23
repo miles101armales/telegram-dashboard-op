@@ -23,10 +23,7 @@ export class SalesPlanService {
     private readonly salesRepository: Repository<Sales>,
     @InjectRepository(AllSales)
     private readonly allSalesRepository: Repository<AllSales>,
-    
-  ) {
-
-  }
+  ) {}
 
   async postSale() {
     const findedExports =
@@ -36,9 +33,11 @@ export class SalesPlanService {
     }
     for (const _export of findedExports) {
       const result = await this.getcourseApiService.makeExport(
-        _export.export_id, 3, 10000
+        _export.export_id,
+        3,
+        10000,
       );
-      console.log(
+      this.logger.log(
         `Export data with ID: ${_export.export_id} has been exported`,
       );
       await this.getcourseApiService.writeExportExistData(result);
@@ -53,8 +52,8 @@ export class SalesPlanService {
     payedAt: string;
     tags: string;
   }) {
-    this.logger.log(`New sale callback to update with id: ${sale.idAzatGc}`)
-    await this.salesRepository.save(sale);
+    this.logger.log(`New sale callback to update with id: ${sale.idAzatGc}`);
+    // await this.salesRepository.save(sale);
     const response = await this.getcourseApiService.requestExportId();
     await this.getcourseApiService.createExportId(response, 3, 6000);
     setTimeout(async () => {
@@ -65,15 +64,18 @@ export class SalesPlanService {
       }
       for (const _export of findedExports) {
         const result = await this.getcourseApiService.makeExport(
-          _export.export_id, 3, 10000
+          _export.export_id,
+          3,
+          10000,
         );
-        console.log(
+        this.logger.log(
           `Export data with ID: ${_export.export_id} has been exported`,
         );
         await this.getcourseApiService.writeExportExistData(result);
-        await this.updateSale(sale.idAzatGc);
+        // await this.updateSale(sale.idAzatGc);
         await this.getManagers();
         await this.getMonthlySales();
+        await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
       }
     }, 120000);
   }
@@ -113,18 +115,11 @@ export class SalesPlanService {
           where: { idAzatGc: Number(idAzatGc) },
         });
 
-        console.log(
-          await this.salesRepository.findOne({
-            where: { idAzatGc: Number(sale.idAzatGc.toString()) },
-          }),
-        );
         if (allsale.profit !== null) {
           motivation_sales += Number(Number(allsale.profit).toFixed(0));
           quantityOfMotivationSales += 1;
         }
       }
-
-      console.log(motivation_sales);
 
       const avgPayedPrice = motivation_sales / quantityOfMotivationSales;
 
@@ -139,34 +134,18 @@ export class SalesPlanService {
     }
   }
 
-  async updateSale(idAzatGc: number) {
-    const newSale = await this.allSalesRepository.findOne({
-      where: { idAzatGc },
-    });
-
-    if (newSale) {
-      await this.salesRepository.update(
-        { idAzatGc },
-        { profit: newSale.profit },
-      );
-      this.logger.log(`Sale updated. ID: ${idAzatGc}`)
-    } else {
-      console.log('Заказ не найден');
-    }
-  }
-
   async getFormattedDate() {
     const now = new Date();
-  
+
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0'); // January is 0!
     const year = now.getFullYear();
-  
+
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
-  
-    this.telegramApiService.updatedTime = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`
+
+    this.telegramApiService.updatedTime = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 
     return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
   }

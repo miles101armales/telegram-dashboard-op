@@ -43,7 +43,7 @@ export class TelegramApiService {
           this.client,
           this.managersRepository,
           this.telegramRepository,
-          this.updatedTime
+          this.updatedTime,
         ),
         new AuthCommand(
           this.client,
@@ -83,5 +83,15 @@ export class TelegramApiService {
       //   this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\nТеперь данные должны обновляться в течение 30 минут после закрытия. Если заметите нестыковку, просьба сообщить /start')
       // }
     } catch (error) {}
+  }
+
+  async sendUpdate(managerName: string, profit: string) {
+    const clients = await this.telegramRepository.find();
+    for (const _client of clients) {
+      this.client.telegram.sendMessage(
+        _client.chat_id,
+        `${managerName} закрыл(а) клиента на сумму ${profit}`,
+      );
+    }
   }
 }
