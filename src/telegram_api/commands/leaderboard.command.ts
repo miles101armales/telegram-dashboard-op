@@ -76,7 +76,7 @@ export class LeaderboardCommand extends Command {
   }
 
   async handled(ctx: MyContext) {
-    this.logger.log(`${ctx.from.username}`);
+    this.logger.log(`${ctx.from.username} запросил таблицу лидеров`);
     this.leaderboard = [];
     this.fact = 0;
     const managers = await this.managersRepository.find();
@@ -89,6 +89,7 @@ export class LeaderboardCommand extends Command {
           plan: (manager.monthly_sales / 1500000) * 100,
           avgPayedPrice: manager.avgPayedPrice,
         });
+        this.fact += manager.monthly_sales
       }
     }
     // Сортировка массива по переменной sales в порядке убывания

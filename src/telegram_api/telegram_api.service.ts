@@ -80,7 +80,7 @@ export class TelegramApiService {
       //       'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
       //     );
       //   }
-      //   this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\nТеперь данные должны обновляться в течение 30 минут после закрытия. Если заметите нестыковку, просьба сообщить /start')
+      //   // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n/start')
       // }
     } catch (error) {}
   }
@@ -89,7 +89,7 @@ export class TelegramApiService {
     const clients = await this.telegramRepository.find();
     for (const _client of clients) {
       this.client.telegram.sendMessage(
-        _client.chat_id,
+        1810423951,
         `${managerName} закрыл(а) клиента на сумму ${profit}`,
       );
     }
