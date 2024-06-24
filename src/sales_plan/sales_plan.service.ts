@@ -25,7 +25,11 @@ export class SalesPlanService {
     @InjectRepository(TelegramApi)
     private readonly telegramRepository: Repository<TelegramApi>,
   ) {
-    this.telegramApiService = new TelegramApiService(this.configService, this.managersRepository, this.telegramRepository)
+    this.telegramApiService = new TelegramApiService(
+      this.configService,
+      this.managersRepository,
+      this.telegramRepository,
+    );
   }
 
   async postSale() {
@@ -62,6 +66,7 @@ export class SalesPlanService {
     setTimeout(async () => {
       const findedExports =
         await this.getcourseApiService.findByStatus('creating');
+      this.logger.log(`Found ${findedExports.length} exports`);
       if (!findedExports) {
         console.log('Экспортов для выгрузки не найдено');
       }
@@ -75,13 +80,13 @@ export class SalesPlanService {
           `Export data with ID: ${_export.export_id} has been exported`,
         );
         await this.getcourseApiService.writeExportExistData(result);
-        setTimeout(async () => {
-          // await this.updateSale(sale.idAzatGc);
-          await this.getManagers();
-          await this.getMonthlySales();
-          await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
-        }, 10000)
       }
+      setTimeout(async () => {
+        // await this.updateSale(sale.idAzatGc);
+        await this.getManagers();
+        await this.getMonthlySales();
+        await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
+      }, 10000);
     }, 120000);
   }
 
@@ -109,7 +114,7 @@ export class SalesPlanService {
           managerName: manager.name,
         },
       });
-      this.logger.log(manager.name);
+      this.logger.log(`Get Motivation Sales for ${manager.name}`);
 
       let quantityOfMotivationSales = 0;
       let motivation_sales = 0; // Переменная для хранения суммы по "Мотивация Тест"

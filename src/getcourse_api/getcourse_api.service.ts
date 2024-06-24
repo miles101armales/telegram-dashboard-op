@@ -41,7 +41,7 @@ export class GetcourseApiService {
   }
 
   async findByStatus(status: 'creating' | 'exported') {
-    return this.exportsRepository.find({
+    return await this.exportsRepository.find({
       where: {
         status,
       },
@@ -72,7 +72,7 @@ export class GetcourseApiService {
         export_id,
         status: 'creating',
       });
-      this.logger.log('Created export')
+      this.logger.log('Export ID  wrote to Database');
       return newExport;
     } catch (error) {
       return;
@@ -82,11 +82,13 @@ export class GetcourseApiService {
   async makeExport(export_id: number, maxRetries: number, delayMs: number) {
     const apiKey = this.configService.get('GC_API_KEY');
     const PREFIX = this.configService.get('GC_PREFIX');
-  
+
     const makeRequest = async (): Promise<AxiosResponse | undefined> => {
       try {
-        const result = await axios.get(`${PREFIX}/exports/${export_id}?key=${apiKey}`);
-  
+        const result = await axios.get(
+          `${PREFIX}/exports/${export_id}?key=${apiKey}`,
+        );
+
         if (result.data.error && result.data.error_code === 910) {
           await this.exportsRepository.update(
             { id: export_id },
@@ -94,17 +96,16 @@ export class GetcourseApiService {
           );
           throw new Error('Файл не создан, попробуйте другой фильтр');
         }
-  
+
         await this.exportsRepository.update(
           { id: export_id },
           { status: 'exported' },
         );
-        
+
         return result;
-  
       } catch (error) {
         console.error(error);
-  
+
         if (maxRetries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delayMs));
           console.log(new Date(), 'Retry ', maxRetries - 1);
@@ -115,28 +116,27 @@ export class GetcourseApiService {
         }
       }
     };
-  
+
     return makeRequest();
   }
 
   async writeExportExistData(data: AxiosResponse) {
     const newData: string[][] = data.data.info.items;
     const realArrOfObjects: any[] = [];
-    
+
     newData.forEach((item) => {
       const tagItemIndex = item.length - 2;
       let tags;
 
       try {
-          // Попытка распарсить как JSON
-          tags = JSON.parse(item[tagItemIndex]);
-        } catch (error) {
-          // Если не удалось, используем как строку
-          tags = item[tagItemIndex];
-        }
+        // Попытка распарсить как JSON
+        tags = JSON.parse(item[tagItemIndex]);
+      } catch (error) {
+        // Если не удалось, используем как строку
+        tags = item[tagItemIndex];
+      }
 
       if (Number(item[10]) > 1) {
-        
         realArrOfObjects.push({
           idAzatGc: item[0],
           productName: item[8],
@@ -164,7 +164,7 @@ export class GetcourseApiService {
           );
         } else {
           await this.salesRepository.save(item);
-          this.logger.log(`New sale added with ID: ${item.idAzatGc}`)
+          this.logger.log(`New sale added with ID: ${item.idAzatGc}`);
         }
       });
       await Promise.all(promises);
