@@ -134,13 +134,8 @@ export class GetcourseApiService {
           // Если не удалось, используем как строку
           tags = item[tagItemIndex];
         }
-  
-        // Приводим к массиву, если это строка
-        if (typeof tags === 'string') {
-          tags = [tags];
-        }
 
-      if (Number(item[10]) > 1 && tags.includes('Мотивация тест')) {
+      if (Number(item[10]) > 1) {
         
         realArrOfObjects.push({
           idAzatGc: item[0],

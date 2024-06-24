@@ -75,10 +75,12 @@ export class SalesPlanService {
           `Export data with ID: ${_export.export_id} has been exported`,
         );
         await this.getcourseApiService.writeExportExistData(result);
-        // await this.updateSale(sale.idAzatGc);
-        await this.getManagers();
-        await this.getMonthlySales();
-        await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
+        setTimeout(async () => {
+          // await this.updateSale(sale.idAzatGc);
+          await this.getManagers();
+          await this.getMonthlySales();
+          await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
+        }, 10000)
       }
     }, 120000);
   }
