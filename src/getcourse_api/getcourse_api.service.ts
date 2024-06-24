@@ -20,51 +20,6 @@ export class GetcourseApiService {
     private readonly salesRepository: Repository<Sales>,
   ) {}
 
-  // async writeExportData(data: AxiosResponse) {
-  //   const newData: string[] = data.data;
-  //   const arrOfObjects: any[] = [];
-  //   newData.forEach((item: any, index) => {
-  //     const payedPrice = Number(item.profit);
-  //     const manager = item.managerName;
-  //     if (payedPrice !== 0 && manager) {
-  //       const obj = {
-  //         id: item.id || 'N/A',
-  //         product: item.orderName || 'N/A',
-  //         manager: item.managerName || 'N/A',
-  //         payedPrice: item.profit || 'N/A',
-  //         date: item.createdAt || 'N/A',
-  //         tags: item.orderTag || 'N/A',
-  //       };
-  //       arrOfObjects.push(obj);
-  //     } else {
-  //       console.log(`Skipped item ${index} because payedPrice is 0.`);
-  //     }
-  //   });
-
-  //   console.log('Количество оплаченных заказов: ', arrOfObjects.length);
-
-  //   const batchSize: number = 100;
-
-  //   for (let i = 0; i < arrOfObjects.length; i += batchSize) {
-  //     const batch = arrOfObjects.slice(i, i + batchSize);
-  //     const promises = batch.map(async (item: CreateSaleDto) => {
-  //       const existingItem = await this.salesRepository.findOne({
-  //         where: {
-  //           id: item.idA,
-  //         },
-  //       });
-  //       if (existingItem) {
-  //         await this.salesRepository.update({ id: existingItem.id }, item);
-  //       } else {
-  //         this.salesRepository.save(item);
-  //       }
-  //     });
-  //     await Promise.all(promises);
-  //     console.log('Processed batch of ordinary orders: ', i);
-  //   }
-  //   return 'OK';
-  // }
-
   async requestExportId() {
     try {
       const now = new Date();
@@ -196,9 +151,8 @@ export class GetcourseApiService {
           managerName: item[19],
         });
       }
-      this.logger.log(`Item added by export ${item[0]}`)
     });
-    console.log('Количество обычных заказов: ', realArrOfObjects.length);
+    this.logger.log('Количество обычных заказов: ', realArrOfObjects.length);
     const batchSize: number = 100;
     for (let i = 0; i < realArrOfObjects.length; i += batchSize) {
       const batch = realArrOfObjects.slice(i, i + batchSize);
@@ -215,6 +169,7 @@ export class GetcourseApiService {
           );
         } else {
           await this.salesRepository.save(item);
+          this.logger.log(`New sale added with ID: ${item.idAzatGc}`)
         }
       });
       await Promise.all(promises);

@@ -16,14 +16,17 @@ export class SalesPlanService {
   private readonly telegramApiService: TelegramApiService;
   private readonly logger = new Logger(SalesPlanService.name);
   constructor(
+    private readonly configService: ConfigService,
     private readonly getcourseApiService: GetcourseApiService,
     @InjectRepository(Manager)
     private readonly managersRepository: Repository<Manager>,
     @InjectRepository(Sales)
     private readonly salesRepository: Repository<Sales>,
-    @InjectRepository(AllSales)
-    private readonly allSalesRepository: Repository<AllSales>,
-  ) {}
+    @InjectRepository(TelegramApi)
+    private readonly telegramRepository: Repository<TelegramApi>,
+  ) {
+    this.telegramApiService = new TelegramApiService(this.configService, this.managersRepository, this.telegramRepository)
+  }
 
   async postSale() {
     const findedExports =
