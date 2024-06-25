@@ -89,7 +89,7 @@ export class LeaderboardCommand extends Command {
           plan: (manager.monthly_sales / 1500000) * 100,
           avgPayedPrice: manager.avgPayedPrice,
         });
-        this.fact += manager.monthly_sales
+        this.fact += manager.monthly_sales;
       }
     }
     // Сортировка массива по переменной sales в порядке убывания
@@ -109,16 +109,30 @@ export class LeaderboardCommand extends Command {
       avgPayedPrice: number;
     }[],
   ): string {
-    const percentage_plan = (this.fact / 27360000) * 100;
-    const header = 'Таблица лидеров:\n\n'; // Заголовок
-    const actualDate = `Актуальнo на <b>${this.updatedTime}</b>`;
-    const planfact = `План/факт: <b>27360000 / ${this.fact.toString()}</b> (${percentage_plan.toFixed(1)}%)\n\n`; // Заголовок
-    const body = leaderboard
-      .map(
-        (entry, index) =>
-          `${index + 1}. <b>${entry.manager}</b>\n${entry.sales.toString()} RUB | Средний чек: ${entry.avgPayedPrice}\n`,
-      )
+    const percentage_plan = (this.fact / 21000000) * 100;
+    const header = 'Таблица лидеров\n\n'; // Заголовок
+    const planfact = `План/факт: 21000000 / ${this.fact.toString()} (${percentage_plan.toFixed(1)}%)\n\n`; // Информация о плане/факте
+
+    const leaders = leaderboard
+      .map((entry, index) => {
+        let placeEmoji = '🏆';
+        let manager = '';
+        if (index === 1) placeEmoji = '🥈';
+        else if (index === 2) placeEmoji = '🥉';
+        else if (index >= 3) placeEmoji = `${index + 1}.`;
+
+        if (entry.manager == 'Менеджер Алина Хамитова') {
+          manager = 'Алина Хамитова';
+        } else if (entry.manager == 'Анастасия Иванова / Куратор') {
+          manager = 'Анастасия Иванова';
+        } else {
+          manager = entry.manager;
+        }
+
+        return `${placeEmoji} <b>${manager}</b> | ${entry.sales.toLocaleString()} ₽`;
+      })
       .join('\n');
-    return header + planfact + body;
+
+    return `${header}${planfact}${leaders}`;
   }
 }

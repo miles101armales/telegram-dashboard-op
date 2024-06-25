@@ -102,7 +102,7 @@ export class GetcourseApiService {
           { status: 'exported' },
         );
 
-        this.logger.log(`Status of ${export_id} updated to "exported"`)
+        this.logger.log(`Status of ${export_id} updated to "exported"`);
 
         return result;
       } catch (error) {
@@ -127,9 +127,13 @@ export class GetcourseApiService {
     const realArrOfObjects: any[] = [];
 
     newData.forEach((item) => {
-      const itemString = JSON.stringify(item[item.length - 2])
+      const itemString = JSON.stringify(item[item.length - 2]);
 
-      if (Number(item[10]) > 1 && itemString.includes('Мотивация') && !(itemString.includes('возврат'))) {
+      if (
+        Number(item[10]) > 1 &&
+        itemString.includes('Мотивация') &&
+        !itemString.includes('возврат')
+      ) {
         realArrOfObjects.push({
           idAzatGc: item[0],
           productName: item[8],
