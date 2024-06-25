@@ -89,7 +89,12 @@ export class TelegramApiService {
     for (const _client of clients) {
       this.client.telegram.sendMessage(
         _client.chat_id,
-        `${managerName} закрыл(а) клиента на сумму ${profit}`,
+        `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
+        {reply_markup: {
+          inline_keyboard: [
+            [{text: 'Поздравить❤️', callback_data: 'cb_congratulation'}]
+          ]
+        }}
       );
     }
   }

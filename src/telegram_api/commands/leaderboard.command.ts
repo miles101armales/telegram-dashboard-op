@@ -110,7 +110,7 @@ export class LeaderboardCommand extends Command {
     }[],
   ): string {
     const percentage_plan = (this.fact / 21000000) * 100;
-    const header = 'Таблица лидеров\n\n'; // Заголовок
+    const header = '⚡<b><u>Таблица лидеров</u></b>⚡\n\n'; // Заголовок
     const planfact = `План/факт: 21000000 / ${this.fact.toString()} (${percentage_plan.toFixed(1)}%)\n\n`; // Информация о плане/факте
 
     const leaders = leaderboard
