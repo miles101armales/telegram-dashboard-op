@@ -102,6 +102,8 @@ export class GetcourseApiService {
           { status: 'exported' },
         );
 
+        this.logger.log(`Status of ${export_id} updated to "exported"`)
+
         return result;
       } catch (error) {
         console.error(error);
@@ -125,24 +127,15 @@ export class GetcourseApiService {
     const realArrOfObjects: any[] = [];
 
     newData.forEach((item) => {
-      const tagItemIndex = item.length - 2;
-      let tags;
+      const itemString = JSON.stringify(item[item.length - 2])
 
-      try {
-        // Попытка распарсить как JSON
-        tags = JSON.parse(item[tagItemIndex]);
-      } catch (error) {
-        // Если не удалось, используем как строку
-        tags = item[tagItemIndex];
-      }
-
-      if (Number(item[10]) > 1) {
+      if (Number(item[10]) > 1 && itemString.includes('Мотивация') && !(itemString.includes('возврат'))) {
         realArrOfObjects.push({
           idAzatGc: item[0],
           productName: item[8],
           payedAt: item[7],
           profit: item[15],
-          tags: item[tagItemIndex],
+          tags: item[item.length - 2],
           managerName: item[19],
         });
       }

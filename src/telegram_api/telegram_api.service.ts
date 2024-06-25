@@ -73,25 +73,25 @@ export class TelegramApiService {
       this.client.launch();
       this.logger.log('Telegram Bot initialized');
       const clients = await this.telegramRepository.find();
-      // for (const _client of clients) {
-      //   if (_client.manager && _client.authorization === false) {
-      //     this.client.telegram.sendMessage(
-      //       _client.chat_id,
-      //       'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
-      //     );
-      //   }
+      for (const _client of clients) {
+	if (_client.manager && _client.authorization === false) {
+           this.client.telegram.sendMessage(
+             _client.chat_id,
+             'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
+           );
+         }
       //   // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n/start')
-      // }
+	 }
     } catch (error) {}
   }
 
   async sendUpdate(managerName: string, profit: string) {
-    // const clients = await this.telegramRepository.find();
-    // for (const _client of clients) {
+    const clients = await this.telegramRepository.find();
+    for (const _client of clients) {
     this.client.telegram.sendMessage(
-      1810423951,
+      _client.chat_id,
       `${managerName} закрыл(а) клиента на сумму ${profit}`,
     );
-    // }
+    }
   }
 }
