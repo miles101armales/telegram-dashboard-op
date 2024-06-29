@@ -29,14 +29,15 @@ export class GetcourseApiService {
       const result = await axios.get(
         `${PREFIX}/deals?key=${apiKey}&created_at[from]=${this.nowDateGc}`,
       );
-      if (result.status == 200) {
+      if (result.status === 200) {
         this.logger.log(`Request Export ID: ${result.data.info.export_id}`);
         return result;
       } else {
-        console.error('Ошибка получения ID экспорта');
+        throw new Error('Ошибка получения ID экспорта');
       }
     } catch (error) {
-      console.error(error);
+      console.error('Ошибка при запросе ID экспорта:', error);
+      throw error;
     }
   }
 
@@ -54,35 +55,32 @@ export class GetcourseApiService {
     delayMs: number,
   ): Promise<GetcourseApi> {
     try {
-      if (!response) {
-        console.error('Не выгружен файл экспорта');
+      if (!response || !response.data.success) {
+        throw new Error('Не удалось создать экспорт');
       }
-      if (!response.data.success) {
-        if (maxRetries > 0) {
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-          console.log(new Date(), 'Retry ', maxRetries - 1);
-          return this.createExportId(response, maxRetries - 1, delayMs);
-        } else {
-          throw new Error('Max retries exceeded');
-        }
-      }
+
       const export_id = response.data.info.export_id;
-      const newExport = this.exportsRepository.save({
+      const newExport = await this.exportsRepository.save({
         name: 'Экспорт заказов Азат',
         export_id,
         status: 'creating',
       });
-      this.logger.log('Export ID  wrote to Database');
+
+      this.logger.log('Export ID записан в базу данных');
       return newExport;
     } catch (error) {
-      return;
+      console.error('Ошибка при создании экспортного ID:', error);
+      return undefined;
     }
   }
 
-  async makeExport(export_id: number, maxRetries: number, delayMs: number) {
+  async makeExport(
+    export_id: number,
+    maxRetries: number,
+    delayMs: number,
+  ): Promise<AxiosResponse | undefined> {
     const apiKey = this.configService.get('GC_API_KEY');
     const PREFIX = this.configService.get('GC_PREFIX');
-
     const makeRequest = async (): Promise<AxiosResponse | undefined> => {
       try {
         const result = await axios.get(
@@ -91,35 +89,37 @@ export class GetcourseApiService {
 
         if (result.data.error && result.data.error_code === 910) {
           await this.exportsRepository.update(
-            { id: export_id },
+            { export_id },
             { status: 'bad_export_id' },
           );
           throw new Error('Файл не создан, попробуйте другой фильтр');
         }
 
-        await this.exportsRepository.update(
-          { id: export_id },
+        const updatedStatus = await this.exportsRepository.update(
+          { export_id },
           { status: 'exported' },
         );
 
-        this.logger.log(`Status of ${export_id} updated to "exported"`);
+        console.log(updatedStatus);
+
+        this.logger.log(`Статус ${export_id} обновлен до "exported"`);
 
         return result;
       } catch (error) {
-        console.error(error);
+        console.error('Ошибка при выполнении экспорта:', error);
 
         if (maxRetries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delayMs));
-          console.log(new Date(), 'Retry ', maxRetries - 1);
+          console.log(new Date(), 'Повторная попытка ', maxRetries - 1);
           return makeRequest();
         } else {
-          console.error('Max retries exceeded');
+          console.error('Превышено максимальное количество повторов');
           return undefined;
         }
       }
     };
 
-    return makeRequest();
+    return await makeRequest();
   }
 
   async writeExportExistData(data: AxiosResponse) {

@@ -72,7 +72,7 @@ export class SalesPlanService {
       }
       for (const _export of findedExports) {
         const result = await this.getcourseApiService.makeExport(
-          47652964,
+          _export.export_id,
           3,
           10000,
         );

@@ -86,16 +86,18 @@ export class TelegramApiService {
 
   async sendUpdate(managerName: string, profit: string) {
     const clients = await this.telegramRepository.find();
-    for (const _client of clients) {
-      this.client.telegram.sendMessage(
-        _client.chat_id,
-        `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
-        {reply_markup: {
+    // for (const _client of clients) {
+    this.client.telegram.sendMessage(
+      1810423951,
+      `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
+      {
+        reply_markup: {
           inline_keyboard: [
-            [{text: 'Поздравить❤️', callback_data: 'cb_congratulation'}]
-          ]
-        }}
-      );
-    }
+            [{ text: 'Поздравить❤️', callback_data: 'cb_congratulation' }],
+          ],
+        },
+      },
+    );
+    // }
   }
 }
