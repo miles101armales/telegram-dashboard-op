@@ -79,25 +79,26 @@ export class TelegramApiService {
             'Вы зарегестрированы. Нажмите кнопку ниже или введите комманду /auth',
           );
         }
-        //   // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n/start')
+          // this.client.telegram.sendMessage(_client.chat_id, 'Обновлена база данных по вашим закрытиям!\n\n/start')
       }
     } catch (error) {}
   }
 
   async sendUpdate(managerName: string, profit: string) {
     const clients = await this.telegramRepository.find();
-    // for (const _client of clients) {
-    this.client.telegram.sendMessage(
-      1810423951,
-      `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: 'Поздравить❤️', callback_data: 'cb_congratulation' }],
-          ],
-        },
-      },
-    );
-    // }
+    for (const _client of clients) {
+      this.client.telegram.sendMessage(
+        _client.chat_id,
+        `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{text: 'Поздравить❤️', callback_data: 'cb_congratulation'}]
+            ]
+          },
+          parse_mode: 'HTML'
+        }
+      );
+    }
   }
 }
