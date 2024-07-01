@@ -114,7 +114,7 @@ export class LeaderboardCommand extends Command {
     this.nowDateGc = now.toISOString().split('T')[0];
     const percentage_plan = (this.fact / 21000000) * 100;
     const header = '⚡<b><u>Таблица лидеров</u></b>⚡\n\n'; // Заголовок
-    const actual = `Актуально на ${this.nowDateGc}`;
+    const actual = `Актуально на ${this.nowDateGc}\n\n`;
     const planfact = `План/факт: 21000000 / ${this.fact.toString()} (${percentage_plan.toFixed(1)}%)\n\n`; // Информация о плане/факте
 
     const leaders = leaderboard
@@ -137,6 +137,6 @@ export class LeaderboardCommand extends Command {
       })
       .join('\n');
 
-    return `${header}${planfact}${leaders}`;
+    return `${header}${actual}${planfact}${leaders}`;
   }
 }

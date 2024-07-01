@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { Repository } from 'typeorm';
 import { Logger } from '@nestjs/common';
+import { buttons_for_admins, buttons_for_managers } from './constants';
 
 export class StartCommand extends Command {
   private readonly logger = new Logger(StartCommand.name);
@@ -49,15 +50,22 @@ export class StartCommand extends Command {
       where: { chat_id: ctx.chat?.id.toString() },
     });
     if (authStatus.authorization) {
-      ctx.reply('Выберите команду:', {
-        reply_markup: {
-          keyboard: [
-            [{ text: '🏆Таблица лидеров🏆' }],
-            [{ text: 'Мои закрытия' }, { text: 'Моя команда' }],
-          ],
-          resize_keyboard: true,
-        },
-      });
+      if(authStatus.role === 'manager') {
+        ctx.reply('Выберите команду:', {
+          reply_markup: {
+            keyboard: buttons_for_managers,
+            resize_keyboard: true,
+          },
+        });
+      }
+      if(authStatus.role === 'admin') {
+        ctx.reply('Выберите команду:', {
+          reply_markup: {
+            keyboard: buttons_for_admins,
+            resize_keyboard: true,
+          },
+        });
+      }
     } else {
       ctx.reply(
         'Запрос на авторизацию отправлен. Вам придет уведомление о готовности.\n\nОжидайте🆔...',
