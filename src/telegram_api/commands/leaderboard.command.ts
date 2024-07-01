@@ -9,6 +9,7 @@ import { SalesPlanService } from 'src/sales_plan/sales_plan.service';
 import { Logger } from '@nestjs/common';
 
 export class LeaderboardCommand extends Command {
+  private nowDateGc: string;
   private readonly logger = new Logger(LeaderboardCommand.name);
   leaderboard: {
     manager: string;
@@ -109,8 +110,11 @@ export class LeaderboardCommand extends Command {
       avgPayedPrice: number;
     }[],
   ): string {
+    const now = new Date();
+    this.nowDateGc = now.toISOString().split('T')[0];
     const percentage_plan = (this.fact / 21000000) * 100;
     const header = '⚡<b><u>Таблица лидеров</u></b>⚡\n\n'; // Заголовок
+    const actual = `Актуально на ${this.nowDateGc}`;
     const planfact = `План/факт: 21000000 / ${this.fact.toString()} (${percentage_plan.toFixed(1)}%)\n\n`; // Информация о плане/факте
 
     const leaders = leaderboard

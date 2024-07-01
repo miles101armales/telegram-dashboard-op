@@ -156,7 +156,7 @@ export class GetcourseApiService {
         });
         if (existingItem) {
           await this.salesRepository.update(
-            { id: existingItem.idAzatGc },
+            { idAzatGc: existingItem.idAzatGc },
             item,
           );
         } else {
