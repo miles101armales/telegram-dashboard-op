@@ -86,18 +86,40 @@ export class TelegramApiService {
 
   async sendUpdate(managerName: string, profit: string) {
     const clients = await this.telegramRepository.find();
-    // for (const _client of clients) {
-    this.client.telegram.sendMessage(
-      1810423951,
-      `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: 'Поздравить❤️', callback_data: 'cb_congratulation' }],
-          ],
+    for (const _client of clients) {
+      this.client.telegram.sendMessage(
+        _client.chat_id,
+        `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: 'Поздравить❤️', callback_data: 'cb_congratulation' }],
+            ],
+          },
         },
-      },
-    );
-    // }
+      );
+    }
+
+    this.client.action('cb_congratulation', async (ctx) => {
+      const managers = await this.managersRepository.find();
+      for (const manager of managers) {
+        if (manager.name.includes(managerName)) {
+          const client = await this.telegramRepository.findOne({
+            where: { name: manager.name },
+          });
+          if (client) {
+            ctx.telegram.sendMessage(
+              client.chat_id,
+              `${ctx.from.username} поздравляет вас с закрытием!`,
+            );
+          } else {
+            ctx.telegram.sendMessage(
+              1810423951,
+              `Ошибка отправки поздравления`,
+            );
+          }
+        }
+      }
+    });
   }
 }
