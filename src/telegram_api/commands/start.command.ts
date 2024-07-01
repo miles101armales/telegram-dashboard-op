@@ -50,7 +50,7 @@ export class StartCommand extends Command {
       where: { chat_id: ctx.chat?.id.toString() },
     });
     if (authStatus.authorization) {
-      if(authStatus.role === 'manager') {
+      if (authStatus.role === 'manager') {
         ctx.reply('Выберите команду:', {
           reply_markup: {
             keyboard: buttons_for_managers,
@@ -58,7 +58,7 @@ export class StartCommand extends Command {
           },
         });
       }
-      if(authStatus.role === 'admin') {
+      if (authStatus.role === 'admin') {
         ctx.reply('Выберите команду:', {
           reply_markup: {
             keyboard: buttons_for_admins,

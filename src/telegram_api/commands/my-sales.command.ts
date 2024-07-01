@@ -20,7 +20,7 @@ export class MySalesCommand extends Command {
   }
 
   async handle(): Promise<void> {
-    this.client.hears('Мои закрытия', async (ctx) => {
+    this.client.hears('⚡Мои закрытия', async (ctx) => {
       const authStatus = (await this.telegramApiRepository.findOne({
         where: { chat_id: ctx.chat.id.toString() },
       }))
@@ -37,7 +37,7 @@ export class MySalesCommand extends Command {
         ctx.reply('Авторизация не пройдена, /auth');
       }
     });
-    this.client.hears('Моя команда', async (ctx) => {
+    this.client.hears('❤️‍🔥Моя команда', async (ctx) => {
       return ctx.replyWithHTML('В разработке');
     });
   }
@@ -50,10 +50,11 @@ export class MySalesCommand extends Command {
     const statistics = await this.managersRepository.findOne({
       where: { name: manager.manager },
     });
-    const month = new Date().getMonth();
+    const month = new Date();
+    const month_formatted = month.toISOString().split('T')[0];
     if (statistics) {
       return ctx.replyWithHTML(
-        `<b>Твоя статистика за Июнь</b>\n\n` +
+        `<b>Твоя статистика за ${month_formatted}</b>\n\n` +
           `План / Факт: <b>${statistics.personal_monthly_goal} / ${statistics.monthly_sales}</b>\n` +
           `Средний чек: <b>${statistics.avgPayedPrice}</b>\n` +
           `Холодная сделка: <b>${statistics.salary}</b>\n` +
@@ -93,5 +94,23 @@ export class MySalesCommand extends Command {
         );
       }
     });
+  }
+
+  async my_command_handled(ctx) {
+    this.logger.log(`${ctx.from.username} запросил команду "Моя команда"`);
+    const clients = await this.telegramApiRepository.find();
+    for (const client of clients) {
+      const command = await this.managersRepository.findOne({
+        where: { name: client.manager },
+      });
+      if (client) {
+        if (client.role === 'manager') {
+          return ctx.replyWithHTML(`Чья комманда: <b>${command.team}</b>`);
+        }
+        if (client.role === 'admin') {
+          return ctx.replyWithHTML();
+        }
+      }
+    }
   }
 }
