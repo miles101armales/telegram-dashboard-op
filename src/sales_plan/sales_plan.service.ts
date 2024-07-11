@@ -133,12 +133,13 @@ export class SalesPlanService {
 
       const avgPayedPrice = motivation_sales / quantityOfMotivationSales;
 
+
       this.managersRepository.update(
         { name: manager.name },
         {
           monthly_sales: motivation_sales,
           quantityOfSales: quantityOfMotivationSales,
-          avgPayedPrice: Math.round(avgPayedPrice),
+          avgPayedPrice: Math.round(avgPayedPrice) ? Math.round(avgPayedPrice) : 0,
         }, // Замените monthly_sales на нужное поле, если требуется
       );
     }

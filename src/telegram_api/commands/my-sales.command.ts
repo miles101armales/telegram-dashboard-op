@@ -20,7 +20,7 @@ export class MySalesCommand extends Command {
   }
 
   async handle(): Promise<void> {
-    this.client.hears('⚡Мои закрытия', async (ctx) => {
+    this.client.hears('⚡Мои закрытия' || 'Мои закрытия', async (ctx) => {
       const authStatus = (await this.telegramApiRepository.findOne({
         where: { chat_id: ctx.chat.id.toString() },
       }))
@@ -37,7 +37,7 @@ export class MySalesCommand extends Command {
         ctx.reply('Авторизация не пройдена, /auth');
       }
     });
-    this.client.hears('❤️‍🔥Моя команда', async (ctx) => {
+    this.client.hears('❤️‍🔥Моя команда' || 'Моя команда', async (ctx) => {
       return ctx.replyWithHTML('В разработке');
     });
   }
@@ -50,11 +50,24 @@ export class MySalesCommand extends Command {
     const statistics = await this.managersRepository.findOne({
       where: { name: manager.manager },
     });
-    const month = new Date();
-    const month_formatted = month.toISOString().split('T')[0];
+    const month = new Date(); // Создаем объект Date для текущей даты
+    const month_formatted = month.toISOString().split('T')[0]; // Получаем дату в формате 'YYYY-MM-DD'
+
+    // Массив с названиями месяцев
+    const monthNames = [
+      'Январь', 'Февраль', 'Март', 'Апрель',
+      'Май', 'Июнь', 'Июль', 'Август',
+      'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+
+    // Получаем номер месяца из даты
+    const monthNumber = new Date(month_formatted).getMonth();
+
+    // Получаем название месяца из массива monthNames
+    const monthName = monthNames[monthNumber];
     if (statistics) {
       return ctx.replyWithHTML(
-        `<b>Твоя статистика за ${month_formatted}</b>\n\n` +
+        `<b>Твоя статистика за ${monthName}</b>\n\n` +
           `План / Факт: <b>${statistics.personal_monthly_goal} / ${statistics.monthly_sales}</b>\n` +
           `Средний чек: <b>${statistics.avgPayedPrice}</b>\n` +
           `Холодная сделка: <b>${statistics.salary}</b>\n` +

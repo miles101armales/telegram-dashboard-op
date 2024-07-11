@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { TelegramApi } from './entities/telegram_api.entity';
 import { AuthCommand } from './commands/authorization.command';
 import { MySalesCommand } from './commands/my-sales.command';
+import { CongratulationCommand } from './commands/congratulation.command';
 
 @Injectable()
 export class TelegramApiService {
@@ -20,6 +21,7 @@ export class TelegramApiService {
   private scenes: Scene[] = [];
   private scenesNames: Scenes.WizardScene<MyContext>[] = [];
   public updatedTime: string;
+  public managerName: string;
 
   private readonly logger = new Logger(TelegramApiService.name);
 
@@ -51,6 +53,12 @@ export class TelegramApiService {
         ),
         new MySalesCommand(
           this.client,
+          this.managersRepository,
+          this.telegramRepository,
+        ),
+        new CongratulationCommand(
+          this.client,
+          this.configService,
           this.managersRepository,
           this.telegramRepository,
         ),
@@ -92,6 +100,7 @@ export class TelegramApiService {
   }
 
   async sendUpdate(managerName: string, profit: string) {
+    this.managerName = managerName;
     const clients = await this.telegramRepository.find();
     for (const _client of clients) {
       this.client.telegram.sendMessage(
@@ -103,30 +112,9 @@ export class TelegramApiService {
               [{ text: 'Поздравить❤️', callback_data: 'cb_congratulation' }],
             ],
           },
+          parse_mode: 'HTML',
         },
       );
     }
-
-    this.client.action('cb_congratulation', async (ctx) => {
-      const managers = await this.managersRepository.find();
-      for (const manager of managers) {
-        if (manager.name.includes(managerName)) {
-          const client = await this.telegramRepository.findOne({
-            where: { name: manager.name },
-          });
-          if (client) {
-            ctx.telegram.sendMessage(
-              client.chat_id,
-              `${ctx.from.username} поздравляет вас с закрытием!`,
-            );
-          } else {
-            ctx.telegram.sendMessage(
-              1810423951,
-              `Ошибка отправки поздравления`,
-            );
-          }
-        }
-      }
-    });
   }
 }
