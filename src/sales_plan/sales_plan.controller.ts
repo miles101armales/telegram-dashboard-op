@@ -1,10 +1,14 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { SalesPlanService } from './sales_plan.service';
 import { Cron } from '@nestjs/schedule';
+import { ManagersGateway } from 'src/managers/managers.gateway';
 
 @Controller('sales')
 export class SalesPlanController {
-  constructor(private readonly salesPlanService: SalesPlanService) {}
+  constructor(
+    private readonly salesPlanService: SalesPlanService,
+    private readonly managersGateway: ManagersGateway,
+  ) {}
 
   @Get('manager')
   async getManager() {
@@ -35,7 +39,7 @@ export class SalesPlanController {
       tags: 'Мотивация тест',
       payedAt: new Date().toISOString(),
     });
-    return id;
+    return this.managersGateway.notifyClients();
   }
 
   @Get('export')

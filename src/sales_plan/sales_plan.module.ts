@@ -12,10 +12,20 @@ import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 import { TelegramApiService } from 'src/telegram_api/telegram_api.service';
 import { TelegramApi } from 'src/telegram_api/entities/telegram_api.entity';
 import { TelegramApiModule } from 'src/telegram_api/telegram_api.module';
+import { ManagersGateway } from 'src/managers/managers.gateway';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Manager, Sales, AllSales, GetcourseApi, TelegramApi]), TelegramApiModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Manager,
+      Sales,
+      AllSales,
+      GetcourseApi,
+      TelegramApi,
+    ]),
+    TelegramApiModule,
+  ],
   controllers: [SalesPlanController],
-  providers: [SalesPlanService, GetcourseApiService],
+  providers: [SalesPlanService, GetcourseApiService, ManagersGateway],
 })
 export class SalesPlanModule {}

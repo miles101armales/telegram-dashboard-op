@@ -61,8 +61,8 @@ export class SalesPlanService {
   }) {
     this.logger.log(`New sale callback to update with id: ${sale.idAzatGc}`);
     // await this.salesRepository.save(sale);
-    const response = await this.getcourseApiService.requestExportId();
-    await this.getcourseApiService.createExportId(response, 3, 6000);
+    // const response = await this.getcourseApiService.requestExportId();
+    // await this.getcourseApiService.createExportId(response, 3, 6000);
     setTimeout(async () => {
       const findedExports =
         await this.getcourseApiService.findByStatus('creating');

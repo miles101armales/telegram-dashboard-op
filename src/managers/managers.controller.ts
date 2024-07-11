@@ -9,4 +9,9 @@ export class ManagersController {
   async salary() {
     this.managersService.calculateSalary();
   }
+
+  @Get('leaderboard')
+  async getLeaderboardList() {
+    return await this.managersService.getLeaderboardList();
+  }
 }

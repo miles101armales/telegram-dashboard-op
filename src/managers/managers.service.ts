@@ -22,4 +22,17 @@ export class ManagersService {
       );
     }
   }
+
+  async getLeaderboardList() {
+    // Получаем всех менеджеров из базы данных
+    const managers = await this.managersRepository.find();
+
+    // Сортируем менеджеров по monthly_sales в порядке убывания
+    const sortedManagers = managers.sort(
+      (a, b) => b.monthly_sales - a.monthly_sales,
+    );
+
+    // Возвращаем отсортированный список
+    return sortedManagers;
+  }
 }
