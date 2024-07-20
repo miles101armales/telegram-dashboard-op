@@ -59,35 +59,35 @@ export class SalesPlanService {
     payedAt: string;
     tags: string;
   }) {
-    this.logger.log(`New sale callback to update with id: ${sale.idAzatGc}`);
+    // this.logger.log(`New sale callback to update with id: ${sale.idAzatGc}`);
     // await this.salesRepository.save(sale);
     // const response = await this.getcourseApiService.requestExportId();
     // await this.getcourseApiService.createExportId(response, 3, 6000);
-    setTimeout(async () => {
-      const findedExports =
-        await this.getcourseApiService.findByStatus('creating');
-      this.logger.log(`Found ${findedExports.length} exports`);
-      if (!findedExports) {
-        console.log('Экспортов для выгрузки не найдено');
-      }
-      for (const _export of findedExports) {
-        const result = await this.getcourseApiService.makeExport(
-          _export.export_id,
-          3,
-          10000,
-        );
-        this.logger.log(
-          `Export data with ID: ${_export.export_id} has been exported`,
-        );
-        await this.getcourseApiService.writeExportExistData(result);
-      }
-      setTimeout(async () => {
-        // await this.updateSale(sale.idAzatGc);
-        await this.getManagers();
-        await this.getMonthlySales();
-        await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
-      }, 10000);
-    }, 120000);
+    // setTimeout(async () => {
+    //   const findedExports =
+    //     await this.getcourseApiService.findByStatus('creating');
+    //   this.logger.log(`Found ${findedExports.length} exports`);
+    //   if (!findedExports) {
+    //     console.log('Экспортов для выгрузки не найдено');
+    //   }
+    //   for (const _export of findedExports) {
+    //     const result = await this.getcourseApiService.makeExport(
+    //       _export.export_id,
+    //       3,
+    //       10000,
+    //     );
+    //     this.logger.log(
+    //       `Export data with ID: ${_export.export_id} has been exported`,
+    //     );
+    //     await this.getcourseApiService.writeExportExistData(result);
+    //   }
+    //   setTimeout(async () => {
+    //     // await this.updateSale(sale.idAzatGc);
+    //     await this.getManagers();
+    //     await this.getMonthlySales();
+    //     await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
+    //   }, 10000);
+    // }, 120000);
   }
 
   async getManagers() {
