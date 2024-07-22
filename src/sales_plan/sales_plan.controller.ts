@@ -30,6 +30,7 @@ export class SalesPlanController {
     @Query('managerName') managerName: string,
     @Query('profit') profit: string,
   ) {
+    console.log('sale');
     const id = Number(idAzatGc);
     await this.salesPlanService.callbackToUpdate({
       idAzatGc: id,

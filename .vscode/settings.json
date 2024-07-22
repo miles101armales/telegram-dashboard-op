@@ -4,5 +4,52 @@
 	},
 	"editor.codeActionsOnSave": {
 		"source.fixAll.eslint": "always"
+	},
+	"todo-tree.highlights.customHighlight": {
+    "TODO": {
+			"foreground": "#000000", // Красный цвет текста
+			"background": "#FFFF00", // Желтый цвет фона
+	"iconColour": "#FFFF00",
+		},
+		"DONE": {
+			"foreground": "#ffffff", // Синий цвет текста
+			"background": "#01a101",  // Зеленый цвет фона
+	"iconColour": "#01a101",
+		},
+		"FIXME": {
+			"foreground": "#000000", // Синий цвет текста
+			"background": "#ff0000",  // Зеленый цвет фона
+	"iconColour": "#ff0000",
+		},
+		"BUG": {
+			"foreground": "#FFFF00", // Синий цвет текста
+			"background": "#ff0000",  // Зеленый цвет фона
+	"iconColour": "#ff0000",
+		},
+		"HACK": {
+			"foreground": "#ffffff", // Синий цвет текста
+			"background": "#ff00cc",  // Зеленый цвет фона
+	"iconColour": "#ff00cc",
+		},
+		"XXX": {
+			"foreground": "#ffffff", // Синий цвет текста
+			"background": "#0000FF",  // Зеленый цвет фона
+	"iconColour": "#00d5ff",
+		},
+		"[ ]": {
+			"foreground": "#000000", // Синий цвет текста
+			"background": "#FFFF00",  // Зеленый цвет фона
+	"iconColour": "#FFFF00",
+		},
+		"[x]": {
+			"foreground": "#ffffff", // Синий цвет текста
+			"background": "#01a101",  // Зеленый цвет фона
+	"iconColour": "#01a101",
+		},
+		"INFO": {
+			"foreground": "#000000", // Синий цвет текста
+			"background": "#00d5ff",  // Зеленый цвет фона
+	"iconColour": "#00d5ff",
+		},
 	}
 }
