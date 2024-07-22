@@ -107,11 +107,11 @@ export class TelegramApiService {
         _client.chat_id,
         `🎉<b>${managerName}</b> закрыл(а) клиента на сумму <b>${profit}</b>`,
         {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: 'Поздравить❤️', callback_data: 'cb_congratulation' }],
-            ],
-          },
+          // reply_markup: {
+          //   inline_keyboard: [
+          //     [{ text: 'Поздравить❤️', callback_data: 'cb_congratulation' }],
+          //   ],
+          // },
           parse_mode: 'HTML',
         },
       );
