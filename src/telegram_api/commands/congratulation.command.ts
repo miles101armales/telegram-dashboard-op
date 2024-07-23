@@ -6,14 +6,28 @@ import { Repository } from 'typeorm';
 import { Command } from '../classes/command.class';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { MyContext } from '../interfaces/context.interface';
-import { MySalesCommand } from './my-sales.command';
 import { TelegramApiService } from '../telegram_api.service';
 import { ConfigService } from '@nestjs/config';
 
 export class CongratulationCommand extends Command {
-  private readonly logger = new Logger(MySalesCommand.name);
-  public manager_name: string;
-  private telegramApiService: TelegramApiService;
+  private readonly logger = new Logger(CongratulationCommand.name);
+  private readonly managerMap: { [key: string]: string } = {
+    Менеджер: 'Менеджер Алина Хамитова',
+    Сергей: 'Сергей Кириллов',
+    Екатерина: 'Екатерина Рафикова',
+    Диана: 'Диана Тагирова',
+    Ишкуватов: 'Ишкуватов Артур',
+    Камилла: 'Камилла',
+    Тимофей: 'Тимофей Иванов',
+    Никита: 'Никита Абрашев',
+    Ринат: 'Ринат Шарифуллин',
+    Айгузель: 'Айгузель Исхакова',
+    Алсу: 'Алсу Салимова',
+    Данила: 'Данила Щербаков',
+    Денис: 'Денис Иштуганов',
+    Арман: 'Арман Кузембаев',
+  };
+
   constructor(
     public client: Telegraf<MyContext>,
     private readonly configService: ConfigService,
@@ -23,11 +37,43 @@ export class CongratulationCommand extends Command {
     private readonly telegramApiRepository: Repository<TelegramApi>,
   ) {
     super(client);
-    this.telegramApiService = new TelegramApiService(
-      this.configService,
-      this.managersRepository,
-      this.telegramApiRepository,
-    );
+  }
+
+  private async getManagerName(message: {
+    text: string;
+  }): Promise<string | null> {
+    const checkformanager = message?.text?.split(
+      /[\uD800-\uDBFF][\uDC00-\uDFFF]|\s/,
+    )[1];
+    return this.managerMap[checkformanager] || null;
+  }
+
+  private async sendCongratulation(ctx, managerName: string): Promise<void> {
+    const managers = await this.managersRepository.find();
+    for (const manager of managers) {
+      if (manager.name === managerName) {
+        const client = await this.telegramApiRepository.findOne({
+          where: { manager: manager.name },
+        });
+        if (client) {
+          this.logger.log(`Поздравление отправлено ${manager.name}`);
+          ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+          await ctx.reply('Поздравление отправлено');
+          await ctx.telegram.sendMessage(
+            client.chat_id,
+            `${ctx.from.username} поздравляет вас с закрытием!`,
+          );
+        } else {
+          await ctx.telegram.sendMessage(
+            1810423951,
+            'Ошибка отправки поздравления',
+          );
+        }
+        return;
+      }
+    }
+    ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    this.logger.log(`Клиент не найден: ${managerName}`);
   }
 
   async handle(): Promise<void> {
@@ -35,43 +81,16 @@ export class CongratulationCommand extends Command {
       const message = ctx.update.callback_query.message as unknown as {
         text: string;
       };
-      if (message && message.text) {
-        this.manager_name = message.text.split(
-          /[\uD800-\uDBFF][\uDC00-\uDFFF]|\s/,
-        )[1];
+      const managerName = await this.getManagerName(message);
+      if (managerName) {
+        this.logger.log(
+          `${ctx.from.username} запуск колбэка поздравления ${managerName}`,
+        );
+        await this.sendCongratulation(ctx, managerName);
       } else {
-        console.log('Текст сообщения не найден');
-      }
-
-      console.log(this.manager_name);
-
-      this.logger.log(
-        ctx.from.username + ` запуск колбэка поздравления ` + this.manager_name,
-      );
-      const managers = await this.managersRepository.find();
-      for (const manager of managers) {
-        if (manager.name.includes(this.manager_name)) {
-          const client = await this.telegramApiRepository.findOne({
-            where: { name: manager.name },
-          });
-          if (client) {
-            this.logger.log('Поздравление отправлено');
-            // ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-            ctx.reply('Поздравление отправлено');
-            return ctx.telegram.sendMessage(
-              client.chat_id,
-              `${ctx.from.username} поздравляет вас с закрытием!`,
-            );
-          } else {
-            return ctx.telegram.sendMessage(
-              1810423951,
-              `Ошибка отправки поздравления`,
-            );
-          }
-        } else {
-          // ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-          this.logger.log('Клиент не найден');
-        }
+        this.logger.log(
+          `Имя менеджера не найдено в сообщении: ${message?.text}`,
+        );
       }
     });
   }
