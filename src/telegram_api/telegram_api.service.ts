@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Telegraf, Scenes } from 'telegraf';
+import { Telegraf, Scenes, session } from 'telegraf';
 import { Command } from './classes/command.class';
 import { Scene } from './classes/scene.class';
 import { MyContext } from './interfaces/context.interface';
@@ -13,6 +13,7 @@ import { TelegramApi } from './entities/telegram_api.entity';
 import { AuthCommand } from './commands/authorization.command';
 import { MySalesCommand } from './commands/my-sales.command';
 import { CongratulationCommand } from './commands/congratulation.command';
+import { AppealCommand } from './commands/appeal.command';
 
 @Injectable()
 export class TelegramApiService {
@@ -67,15 +68,17 @@ export class TelegramApiService {
         command.handle();
       }
 
-      this.scenes = [
-        // new Scenes(this.client)
-      ];
+      this.scenes = [new AppealCommand(this.client)];
       for (const scene of this.scenes) {
         scene.handle();
         this.scenesNames.push(scene.scene);
       }
       const stage = new Scenes.Stage(this.scenesNames);
+      this.client.use(session());
       this.client.use(stage.middleware());
+      this.client.hears('Написать обращение', (ctx) =>
+        ctx.scene.enter('appeal'),
+      );
 
       this.client.launch();
       this.logger.log('Telegram Bot initialized');
