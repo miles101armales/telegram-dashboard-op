@@ -30,6 +30,7 @@ export class GetcourseApiService {
         `${PREFIX}/deals?key=${apiKey}&created_at[from]=${this.nowDateGc}`,
       );
       if (result.status === 200) {
+        console.log(result.data)
         this.logger.log(`Request Export ID: ${result.data.info.export_id}`);
         return result;
       } else {
