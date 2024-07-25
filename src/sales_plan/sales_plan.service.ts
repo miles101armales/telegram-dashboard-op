@@ -159,4 +159,8 @@ export class SalesPlanService {
 
     return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
   }
+
+  async getAllSales() {
+    return await this.salesRepository.find();
+  }
 }

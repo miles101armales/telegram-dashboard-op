@@ -22,5 +22,5 @@ export class TelegramApi {
   manager?: string;
 
   @Column({ default: 'manager' })
-  role: 'manager' | 'admin';
+  role: 'manager' | 'admin' | 'ROP';
 }

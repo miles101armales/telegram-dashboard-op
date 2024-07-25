@@ -9,6 +9,7 @@ import { Logger } from '@nestjs/common';
 
 export class MySalesCommand extends Command {
   private readonly logger = new Logger(MySalesCommand.name);
+  public monthName: string;
   constructor(
     public client: Telegraf<MyContext>,
     @InjectRepository(Manager)
@@ -20,36 +21,6 @@ export class MySalesCommand extends Command {
   }
 
   async handle(): Promise<void> {
-    this.client.hears('⚡Мои закрытия' || 'Мои закрытия', async (ctx) => {
-      const authStatus = (await this.telegramApiRepository.findOne({
-        where: { chat_id: ctx.chat.id.toString() },
-      }))
-        ? await this.telegramApiRepository.findOne({
-            where: { chat_id: ctx.chat.id.toString() },
-          })
-        : undefined;
-      if (authStatus.authorization) {
-        this.handled(ctx);
-        this.client.action('personal_goal_edit', async (ctx) => {
-          this.personalGoalEdit(ctx);
-        });
-      } else {
-        ctx.reply('Авторизация не пройдена, /auth');
-      }
-    });
-    this.client.hears('❤️‍🔥Моя команда' || 'Моя команда', async (ctx) => {
-      return ctx.replyWithHTML('В разработке');
-    });
-  }
-
-  async handled(ctx: MyContext) {
-    this.logger.log(`${ctx.from.username} запросил команду "Мои закрытия"`);
-    const manager = await this.telegramApiRepository.findOne({
-      where: { chat_id: ctx.chat.id.toString() },
-    });
-    const statistics = await this.managersRepository.findOne({
-      where: { name: manager.manager },
-    });
     const month = new Date(); // Создаем объект Date для текущей даты
     const month_formatted = month.toISOString().split('T')[0]; // Получаем дату в формате 'YYYY-MM-DD'
 
@@ -73,10 +44,45 @@ export class MySalesCommand extends Command {
     const monthNumber = new Date(month_formatted).getMonth();
 
     // Получаем название месяца из массива monthNames
-    const monthName = monthNames[monthNumber];
+    this.monthName = monthNames[monthNumber];
+    this.client.hears('⚡Мои закрытия' || 'Мои закрытия', async (ctx) => {
+      const authStatus = (await this.telegramApiRepository.findOne({
+        where: { chat_id: ctx.chat.id.toString() },
+      }))
+        ? await this.telegramApiRepository.findOne({
+            where: { chat_id: ctx.chat.id.toString() },
+          })
+        : undefined;
+      if (authStatus.authorization) {
+        this.handled(ctx);
+        this.client.action('personal_goal_edit', async (ctx) => {
+          this.personalGoalEdit(ctx);
+        });
+      } else {
+        ctx.reply('Авторизация не пройдена, /auth');
+      }
+    });
+    this.client.hears('❤️‍🔥Моя команда', async (ctx) => {
+      return this.my_command_handled(ctx);
+    });
+
+    this.client.hears('⚡Статистика', async (ctx) => {
+      return this.my_command_handled(ctx);
+    });
+  }
+
+  async handled(ctx: MyContext) {
+    this.logger.log(`${ctx.from.username} запросил команду "Мои закрытия"`);
+    const manager = await this.telegramApiRepository.findOne({
+      where: { chat_id: ctx.chat.id.toString() },
+    });
+    const statistics = await this.managersRepository.findOne({
+      where: { name: manager.manager },
+    });
+
     if (statistics) {
       return ctx.replyWithHTML(
-        `<b>Твоя статистика за ${monthName}</b>\n\n` +
+        `<b>Твоя статистика за ${this.monthName}</b>\n\n` +
           `План / Факт: <b>${statistics.personal_monthly_goal} / ${statistics.monthly_sales}</b>\n` +
           `Средний чек: <b>${statistics.avgPayedPrice}</b>\n` +
           `Холодная сделка: <b>${statistics.salary}</b>\n` +
@@ -120,18 +126,45 @@ export class MySalesCommand extends Command {
 
   async my_command_handled(ctx) {
     this.logger.log(`${ctx.from.username} запросил команду "Моя команда"`);
-    const clients = await this.telegramApiRepository.find();
-    for (const client of clients) {
-      const command = await this.managersRepository.findOne({
-        where: { name: client.manager },
-      });
-      if (client) {
-        if (client.role === 'manager') {
-          return ctx.replyWithHTML(`Чья комманда: <b>${command.team}</b>`);
-        }
-        if (client.role === 'admin') {
-          return ctx.replyWithHTML();
-        }
+    const client = await this.telegramApiRepository.findOne({
+      where: { chat_id: ctx.chat.id },
+    });
+    const manager = await this.managersRepository.findOne({
+      where: { name: client.manager },
+    });
+
+    if (manager) {
+      if (client.role === 'manager') {
+        return ctx.replyWithHTML(
+          `Статистика по команде\n\n` +
+            `<code>${manager.team}</code>\n\n` +
+            `Выполнение плана за ${this.monthName}: вычисляется`,
+        );
+      }
+      if (client.role === 'admin') {
+        return ctx.replyWithHTML(
+          `Статистика по твоей команде <b>${manager.team} за ${this.monthName}</b>\n\n` +
+            `Объём продаж: -\n` +
+            `Динамика продаж: -\n` +
+            `Конверсионные показатели менеджеров: -\n` +
+            `Средний чек менеджеров -\n` +
+            `Целевые показатели и KPI: -\n\n` +
+            `Получение данных в разработке, при корректировке показателей обращайтесь @milesarmales`,
+        );
+      }
+      if (client.role === 'ROP') {
+        return ctx.replyWithHTML(
+          `Статистика по твоей команде <b>${manager.team} за ${this.monthName}</b>\n\n` +
+            `Объём продаж: -\n` +
+            `Динамика продаж: -\n` +
+            `Конверсионные показатели отдела: -\n` +
+            `Средний чек отдела: -\n` +
+            `Воронка продаж отдела: -\n` +
+            `Продуктовые метрики: -\n` +
+            `Эффективность отдела: -\n` +
+            `Целевые показатели и KPI: -\n\n` +
+            `Получение данных в разработке, при корректировке показателей обращайтесь @milesarmales`,
+        );
       }
     }
   }

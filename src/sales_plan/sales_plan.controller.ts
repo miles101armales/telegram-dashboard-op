@@ -21,6 +21,11 @@ export class SalesPlanController {
     await this.salesPlanService.getMonthlySales();
   }
 
+  @Get('all')
+  async getAllSales() {
+    return await this.salesPlanService.getAllSales();
+  }
+
   // НОВЫЙ КОЛБЭК НА ПОЛУЧЕНИЕ ЗАКРЫТОГО ЗАКАЗА ПО ХОЛОДКЕ
 
   @Get('sale')

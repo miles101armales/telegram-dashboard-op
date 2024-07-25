@@ -17,7 +17,7 @@
 	"iconColour": "#01a101",
 		},
 		"FIXME": {
-			"foreground": "#000000", // Синий цвет текста
+			"foreground": "#000000", // Синий цвет текста 
 			"background": "#ff0000",  // Зеленый цвет фона
 	"iconColour": "#ff0000",
 		},
