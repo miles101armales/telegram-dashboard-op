@@ -48,6 +48,11 @@ export class SalesPlanController {
     return this.managersGateway.notifyClients();
   }
 
+  @Get('realtime')
+  async realtimeUpdate() {
+    return this.managersGateway.notifyClients();
+  }
+
   @Get('export')
   async export() {
     this.salesPlanService.postSale();
