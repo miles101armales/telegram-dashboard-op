@@ -121,6 +121,7 @@ export class TelegramApiService {
           1810423951,
           `@${ctx.from.username} оценил анализ`,
         );
+        ctx.editMessageReplyMarkup({ inline_keyboard: [] });
       });
     } catch (error) {}
   }
