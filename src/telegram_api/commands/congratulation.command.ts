@@ -29,6 +29,8 @@ export class CongratulationCommand extends Command {
     Роберт: 'Роберт Ханов',
     Rafis: 'Rafis',
     Радмир: 'Радмир Байрамгулов',
+    Алиса: 'Алиса',
+    Стас: 'Стас Власов',
   };
 
   constructor(

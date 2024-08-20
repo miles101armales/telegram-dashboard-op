@@ -24,11 +24,14 @@ export class SalesPlanService {
     private readonly salesRepository: Repository<Sales>,
     @InjectRepository(TelegramApi)
     private readonly telegramRepository: Repository<TelegramApi>,
+    @InjectRepository(GetcourseApi)
+    private readonly exportsRepository: Repository<GetcourseApi>,
   ) {
     this.telegramApiService = new TelegramApiService(
       this.configService,
       this.managersRepository,
       this.telegramRepository,
+      this.exportsRepository
     );
   }
 

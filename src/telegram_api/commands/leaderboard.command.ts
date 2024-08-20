@@ -7,6 +7,9 @@ import { Repository } from 'typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { SalesPlanService } from 'src/sales_plan/sales_plan.service';
 import { Logger } from '@nestjs/common';
+import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale'
 
 export class LeaderboardCommand extends Command {
   private nowDateGc: string;
@@ -24,7 +27,8 @@ export class LeaderboardCommand extends Command {
     private readonly managersRepository: Repository<Manager>,
     @InjectRepository(TelegramApi)
     private readonly telegramApiRepository: Repository<TelegramApi>,
-    private updatedTime: string,
+    @InjectRepository(GetcourseApi)
+    private readonly exportsRepository: Repository<GetcourseApi>,
   ) {
     super(client);
   }
@@ -99,22 +103,34 @@ export class LeaderboardCommand extends Command {
     // Форматирование массива в красивую строку
     const leaderboardString = this.formatLeaderboard(this.leaderboard);
 
-    return ctx.replyWithHTML(leaderboardString);
+    return ctx.replyWithHTML(await leaderboardString);
   }
 
-  formatLeaderboard(
+  async formatLeaderboard(
     leaderboard: {
       manager: string;
       sales: number;
       plan: number;
       avgPayedPrice: number;
     }[],
-  ): string {
+  ): Promise<string> {
     const now = new Date();
-    this.nowDateGc = now.toISOString().split('T')[0];
+    // Получаем последнюю запись со статусом 'exported'
+    const lastExportedRecord = await this.exportsRepository.findOne({
+      where: { status: 'exported' },
+      order: { updatedAt: 'DESC' },
+    });
+    const timeZoneOffset = 5 * 60; // Разница в минутах между UTC и вашей временной зоной (+5 часов)
+
+    const updatedAtDate = new Date(lastExportedRecord.updatedAt);
+    
+    // Применяем смещение
+    updatedAtDate.setMinutes(updatedAtDate.getMinutes() + timeZoneOffset);
+    const formattedDate = format(updatedAtDate, 'd MMMM yyyy г., HH:mm:ss', { locale: ru });
     const percentage_plan = (this.fact / 21000000) * 100;
+    //формируем сообщение
     const header = '⚡<b><u>Таблица лидеров</u></b>⚡\n\n'; // Заголовок
-    const actual = `Актуально на ${this.nowDateGc}\n\n`;
+    const actual = `Актуально на ${formattedDate}\n\n`;
     const planfact = `План/факт: <b>21000000 / ${this.fact.toString()}</b> (${percentage_plan.toFixed(1)}%)\n\n`; // Информация о плане/факте
 
     const leaders = leaderboard
@@ -140,3 +156,7 @@ export class LeaderboardCommand extends Command {
     return `${header}${actual}${planfact}${leaders}`;
   }
 }
+function utcToZonedTime(updatedAt: Date, timeZone: string) {
+  throw new Error('Function not implemented.');
+}
+

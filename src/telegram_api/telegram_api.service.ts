@@ -14,6 +14,7 @@ import { AuthCommand } from './commands/authorization.command';
 import { MySalesCommand } from './commands/my-sales.command';
 import { CongratulationCommand } from './commands/congratulation.command';
 import { AppealCommand } from './commands/appeal.command';
+import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 
 @Injectable()
 export class TelegramApiService {
@@ -32,6 +33,8 @@ export class TelegramApiService {
     private readonly managersRepository: Repository<Manager>,
     @InjectRepository(TelegramApi)
     private readonly telegramRepository: Repository<TelegramApi>,
+    @InjectRepository(GetcourseApi)
+    private readonly exportsRepository: Repository<GetcourseApi>,
   ) {
     this.client = new Telegraf<MyContext>(
       this.configService.get('TELEGRAM_API_KEY'),
@@ -45,7 +48,7 @@ export class TelegramApiService {
           this.client,
           this.managersRepository,
           this.telegramRepository,
-          this.updatedTime,
+          this.exportsRepository
         ),
         new AuthCommand(
           this.client,
