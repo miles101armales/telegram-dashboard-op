@@ -164,6 +164,23 @@ export class SalesPlanService {
   }
 
   async getAllSales() {
-    return await this.salesRepository.find();
+    // Получаем все записи из таблицы Sales
+    const sales = await this.salesRepository.find();
+
+    // Проходим по каждой записи и обновляем managerName
+    for (const sale of sales) {
+
+      if (sale.managerName === 'Менеджер Алина Хамитова') {
+        sale.managerName = 'Алина Хамитова';
+      } else if (sale.managerName === 'Анастасия Иванова / Куратор') {
+        sale.managerName = 'Анастасия Иванова';
+      } else if (sale.managerName === 'Катя Рафикова') {
+        sale.managerName = 'Екатерина Рафикова';
+      }
+    }
+
+    console.log(sales)
+
+    return sales;
   }
 }
