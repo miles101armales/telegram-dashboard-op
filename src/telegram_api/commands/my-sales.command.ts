@@ -3,9 +3,10 @@ import { Command } from '../classes/command.class';
 import { MyContext } from '../interfaces/context.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Manager } from 'src/managers/entities/manager.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { Logger } from '@nestjs/common';
+import { Sales } from 'src/sales_plan/entities/sales.entity';
 
 export class MySalesCommand extends Command {
   private readonly logger = new Logger(MySalesCommand.name);
@@ -16,6 +17,8 @@ export class MySalesCommand extends Command {
     private readonly managersRepository: Repository<Manager>,
     @InjectRepository(TelegramApi)
     private readonly telegramApiRepository: Repository<TelegramApi>,
+    @InjectRepository(Sales)
+    private readonly salesRepository: Repository<Sales>,
   ) {
     super(client);
   }
@@ -80,12 +83,23 @@ export class MySalesCommand extends Command {
       where: { name: manager.manager },
     });
 
+    let percentageGoal;
+
+    const perosnalMonthlyGoal = statistics.personal_monthly_goal
+      ? Number(statistics.personal_monthly_goal)
+      : 'Значение не указано';
+    if (perosnalMonthlyGoal !== 'Значение не указано') {
+      percentageGoal = statistics.monthly_sales / perosnalMonthlyGoal;
+    } else {
+      percentageGoal = null;
+    }
+
     if (statistics) {
       return ctx.replyWithHTML(
         `<b>Твоя статистика за ${this.monthName}</b>\n\n` +
-          `План / Факт: <b>${statistics.personal_monthly_goal} / ${statistics.monthly_sales}</b>\n` +
+          `Личный лан / Факт: <b>${perosnalMonthlyGoal} / ${statistics.monthly_sales}</b> (${percentageGoal ? percentageGoal : 0}%)\n` +
           `Средний чек: <b>${statistics.avgPayedPrice}</b>\n` +
-          `Холодная сделка: <b>${statistics.salary}</b>\n` +
+          `Зарплата (без аванса): <b>${statistics.salary}</b>\n` +
           `Команда: <b>${statistics.team}</b>`,
         {
           reply_markup: {
@@ -127,45 +141,83 @@ export class MySalesCommand extends Command {
   async my_command_handled(ctx) {
     this.logger.log(`${ctx.from.username} запросил команду "Моя команда"`);
     const client = await this.telegramApiRepository.findOne({
-      where: { chat_id: ctx.chat.id },
+      where: { chat_id: ctx.chat.id.toString() },
     });
+
+    if (!client) {
+      return ctx.replyWithHTML('Не удалось найти данные пользователя.');
+    }
+
     const manager = await this.managersRepository.findOne({
       where: { name: client.manager },
     });
 
-    if (manager) {
-      if (client.role === 'manager') {
-        return ctx.replyWithHTML(
-          `Статистика по команде\n\n` +
-            `<code>${manager.team}</code>\n\n` +
-            `Выполнение плана за ${this.monthName}: вычисляется`,
-        );
-      }
-      if (client.role === 'admin') {
-        return ctx.replyWithHTML(
-          `Статистика по твоей команде <b>${manager.team} за ${this.monthName}</b>\n\n` +
-            `Объём продаж: -\n` +
-            `Динамика продаж: -\n` +
-            `Конверсионные показатели менеджеров: -\n` +
-            `Средний чек менеджеров -\n` +
-            `Целевые показатели и KPI: -\n\n` +
-            `Получение данных в разработке, при корректировке показателей обращайтесь @milesarmales`,
-        );
-      }
-      if (client.role === 'ROP') {
-        return ctx.replyWithHTML(
-          `Статистика по твоей команде <b>${manager.team} за ${this.monthName}</b>\n\n` +
-            `Объём продаж: -\n` +
-            `Динамика продаж: -\n` +
-            `Конверсионные показатели отдела: -\n` +
-            `Средний чек отдела: -\n` +
-            `Воронка продаж отдела: -\n` +
-            `Продуктовые метрики: -\n` +
-            `Эффективность отдела: -\n` +
-            `Целевые показатели и KPI: -\n\n` +
-            `Получение данных в разработке, при корректировке показателей обращайтесь @milesarmales`,
-        );
-      }
+    if (!manager || !manager.team) {
+      return ctx.replyWithHTML('Не удалось найти данные команды.');
     }
+
+    // Находим всех менеджеров в той же команде
+    const teamManagers = await this.managersRepository.find({
+      where: { team: manager.team },
+    });
+
+    if (!teamManagers.length) {
+      return ctx.replyWithHTML('Нет данных о менеджерах в этой команде.');
+    }
+
+    const managerNames = teamManagers.map((m) => m.name);
+
+    // Находим все продажи, совершенные менеджерами этой команды
+    const sales = await this.salesRepository.find({
+      where: { managerName: In(managerNames) },
+    });
+
+    if (!sales.length) {
+      return ctx.replyWithHTML('Нет данных о продажах.');
+    }
+
+    // Расчет метрик по команде
+    const totalSalesVolume = sales.reduce(
+      (sum, sale) => sum + parseFloat(sale.profit || '0'),
+      0,
+    );
+    const quantityOfSales = sales.length;
+    const avgCheck = totalSalesVolume / quantityOfSales;
+
+    const monthlyGoal = teamManagers.reduce(
+      (sum, m) => sum + parseFloat(m.personal_monthly_goal || '0'),
+      0,
+    );
+    const performance = monthlyGoal
+      ? (totalSalesVolume / monthlyGoal) * 100
+      : null;
+
+    const teamName = manager.team;
+    const monthName = 'Август'; // Предположим, что это фиксированный месяц для примера
+
+    let replyMessage = `Статистика по твоей команде <b>${teamName} за ${monthName}</b>\n\n`;
+    replyMessage += `Объём продаж: ${totalSalesVolume.toFixed(2)}\n`;
+    replyMessage += `Количество продаж: ${quantityOfSales}\n`;
+    replyMessage += `Средний чек: ${avgCheck.toFixed(2)}\n`;
+
+    if (performance) {
+      replyMessage += `Выполнение плана: ${performance.toFixed(2)}%\n`;
+    } else {
+      replyMessage += `Выполнение плана: недоступно (отсутствует цель по продажам).\n`;
+    }
+
+    if (client.role === 'admin') {
+      // Дополнительные метрики для админа
+      replyMessage += `Конверсионные показатели менеджеров: рассчитывается...\n`;
+      replyMessage += `Целевые показатели и KPI: недоступны (недостаточно данных).\n`;
+    }
+
+    if (client.role === 'ROP') {
+      // Дополнительные метрики для ROP
+      replyMessage += `Динамика продаж: рассчитывается...\n`;
+      replyMessage += `Эффективность отдела: рассчитывается...\n`;
+    }
+
+    return ctx.reply(replyMessage);
   }
 }

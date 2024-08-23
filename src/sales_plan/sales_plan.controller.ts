@@ -2,12 +2,14 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { SalesPlanService } from './sales_plan.service';
 import { Cron } from '@nestjs/schedule';
 import { ManagersGateway } from 'src/managers/managers.gateway';
+import { ManagersService } from 'src/managers/managers.service';
 
 @Controller('sales')
 export class SalesPlanController {
   constructor(
     private readonly salesPlanService: SalesPlanService,
     private readonly managersGateway: ManagersGateway,
+    private readonly managerService: ManagersService,
   ) {}
 
   @Get('manager')
@@ -45,6 +47,7 @@ export class SalesPlanController {
       tags: 'Мотивация тест',
       payedAt: new Date().toISOString(),
     });
+    await this.managerService.calculateSalary();
     return this.managersGateway.notifyClients();
   }
 

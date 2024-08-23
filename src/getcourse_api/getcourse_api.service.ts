@@ -30,7 +30,7 @@ export class GetcourseApiService {
         `${PREFIX}/deals?key=${apiKey}&created_at[from]=${this.nowDateGc}`,
       );
       if (result.status === 200) {
-        console.log(result.data)
+        console.log(result.data);
         this.logger.log(`Request Export ID: ${result.data.info.export_id}`);
         return result;
       } else {
@@ -131,6 +131,9 @@ export class GetcourseApiService {
       const itemString = JSON.stringify(item[item.length - 2]);
 
       if (
+        item[10] !== undefined &&
+        item[10] !== null &&
+        !isNaN(Number(item[10])) &&
         Number(item[10]) > 1 &&
         itemString.includes('Мотивация') &&
         !itemString.includes('возврат')

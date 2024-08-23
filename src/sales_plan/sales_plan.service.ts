@@ -31,7 +31,8 @@ export class SalesPlanService {
       this.configService,
       this.managersRepository,
       this.telegramRepository,
-      this.exportsRepository
+      this.exportsRepository,
+      this.salesRepository,
     );
   }
 
@@ -169,7 +170,6 @@ export class SalesPlanService {
 
     // Проходим по каждой записи и обновляем managerName
     for (const sale of sales) {
-
       if (sale.managerName === 'Менеджер Алина Хамитова') {
         sale.managerName = 'Алина Хамитова';
       } else if (sale.managerName === 'Анастасия Иванова / Куратор') {
@@ -179,7 +179,7 @@ export class SalesPlanService {
       }
     }
 
-    console.log(sales)
+    console.log(sales);
 
     return sales;
   }

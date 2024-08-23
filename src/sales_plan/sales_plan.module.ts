@@ -13,6 +13,7 @@ import { TelegramApiService } from 'src/telegram_api/telegram_api.service';
 import { TelegramApi } from 'src/telegram_api/entities/telegram_api.entity';
 import { TelegramApiModule } from 'src/telegram_api/telegram_api.module';
 import { ManagersGateway } from 'src/managers/managers.gateway';
+import { ManagersService } from 'src/managers/managers.service';
 
 @Module({
   imports: [
@@ -26,6 +27,11 @@ import { ManagersGateway } from 'src/managers/managers.gateway';
     TelegramApiModule,
   ],
   controllers: [SalesPlanController],
-  providers: [SalesPlanService, GetcourseApiService, ManagersGateway],
+  providers: [
+    SalesPlanService,
+    GetcourseApiService,
+    ManagersGateway,
+    ManagersService,
+  ],
 })
 export class SalesPlanModule {}
