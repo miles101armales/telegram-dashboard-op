@@ -89,7 +89,7 @@ export class MySalesCommand extends Command {
       ? Number(statistics.personal_monthly_goal)
       : 'Значение не указано';
     if (perosnalMonthlyGoal !== 'Значение не указано') {
-      percentageGoal = statistics.monthly_sales / perosnalMonthlyGoal;
+      percentageGoal = statistics.monthly_sales / perosnalMonthlyGoal * 100;
     } else {
       percentageGoal = null;
     }
@@ -97,7 +97,7 @@ export class MySalesCommand extends Command {
     if (statistics) {
       return ctx.replyWithHTML(
         `<b>Твоя статистика за ${this.monthName}</b>\n\n` +
-          `Личный лан / Факт: <b>${perosnalMonthlyGoal} / ${statistics.monthly_sales}</b> (${percentageGoal ? percentageGoal : 0}%)\n` +
+          `Личный лан / Факт: <b>${perosnalMonthlyGoal} / ${statistics.monthly_sales}</b> (${percentageGoal ? percentageGoal.toFixed(2) : 0}%)\n` +
           `Средний чек: <b>${statistics.avgPayedPrice}</b>\n` +
           `Зарплата (без аванса): <b>${statistics.salary}</b>\n` +
           `Команда: <b>${statistics.team}</b>`,
@@ -218,6 +218,6 @@ export class MySalesCommand extends Command {
       replyMessage += `Эффективность отдела: рассчитывается...\n`;
     }
 
-    return ctx.reply(replyMessage);
+    return ctx.reply(replyMessage, {parse_mode: 'HTML'});
   }
 }
