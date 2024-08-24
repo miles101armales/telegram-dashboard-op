@@ -16,6 +16,7 @@ import { CongratulationCommand } from './commands/congratulation.command';
 import { AppealCommand } from './commands/appeal.command';
 import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 import { Sales } from 'src/sales_plan/entities/sales.entity';
+import { BlankScene } from './scenes/blank.scene';
 
 @Injectable()
 export class TelegramApiService {
@@ -46,7 +47,11 @@ export class TelegramApiService {
   async onApplicationBootstrap() {
     try {
       this.commands = [
-        new StartCommand(this.client, this.telegramRepository),
+        new StartCommand(
+          this.client,
+          this.telegramRepository,
+          this.managersRepository,
+        ),
         new LeaderboardCommand(
           this.client,
           this.managersRepository,
@@ -75,7 +80,10 @@ export class TelegramApiService {
         command.handle();
       }
 
-      this.scenes = [new AppealCommand(this.client)];
+      this.scenes = [
+        new AppealCommand(this.client),
+        new BlankScene(this.client),
+      ];
       for (const scene of this.scenes) {
         scene.handle();
         this.scenesNames.push(scene.scene);
@@ -86,6 +94,9 @@ export class TelegramApiService {
       this.client.hears('Написать обращение', (ctx) =>
         ctx.scene.enter('appeal'),
       );
+      this.client.hears('Запросить анкету', (ctx) => {
+        ctx.scene.enter('blank');
+      });
 
       this.client.launch();
       this.logger.log('Telegram Bot initialized');

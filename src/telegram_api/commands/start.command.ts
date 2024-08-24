@@ -5,7 +5,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { Repository } from 'typeorm';
 import { Logger } from '@nestjs/common';
-import { buttons_for_admins, buttons_for_managers } from './constants';
+import {
+  buttons_for_admins,
+  buttons_for_managers,
+  buttons_for_timofey,
+} from './constants';
+import { Manager } from 'src/managers/entities/manager.entity';
 
 export class StartCommand extends Command {
   private readonly logger = new Logger(StartCommand.name);
@@ -13,6 +18,8 @@ export class StartCommand extends Command {
     public client: Telegraf<MyContext>,
     @InjectRepository(TelegramApi)
     private readonly telegramRepository: Repository<TelegramApi>,
+    @InjectRepository(Manager)
+    private readonly managerRepository: Repository<Manager>,
   ) {
     super(client);
   }
@@ -49,8 +56,21 @@ export class StartCommand extends Command {
     const authStatus = await this.telegramRepository.findOne({
       where: { chat_id: ctx.chat?.id.toString() },
     });
+    console.log(authStatus);
+    const team = await this.managerRepository.findOne({
+      where: { name: authStatus.manager },
+    });
+    console.log(team);
     if (authStatus.authorization) {
-      if (authStatus.role === 'manager') {
+      if (authStatus.role === 'manager' && team.team == 'Тимофей') {
+        ctx.reply('Выберите команду:', {
+          reply_markup: {
+            keyboard: buttons_for_timofey,
+            resize_keyboard: true,
+          },
+        });
+      }
+      if (authStatus.role === 'manager' && team.team == 'Ринат') {
         ctx.reply('Выберите команду:', {
           reply_markup: {
             keyboard: buttons_for_managers,

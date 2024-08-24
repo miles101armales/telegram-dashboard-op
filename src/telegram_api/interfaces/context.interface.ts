@@ -14,6 +14,11 @@ export interface MySession extends Scenes.WizardSession<MyWizardSession> {
   phone: string;
   name: string;
   symbol: string;
+  bank: string;
+  client_name: string;
+  product: string;
+  price: string;
+  time: string;
 }
 
 export interface MyContext extends Context {
