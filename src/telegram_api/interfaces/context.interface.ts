@@ -19,6 +19,8 @@ export interface MySession extends Scenes.WizardSession<MyWizardSession> {
   product: string;
   price: string;
   time: string;
+  requestingUserId: number;
+  sentMessageId: number;
 }
 
 export interface MyContext extends Context {
