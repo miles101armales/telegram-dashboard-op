@@ -23,7 +23,7 @@ export class BlankScene extends Scene {
           ],
         },
       });
-      ctx.wizard.selectStep(1);
+      ctx.wizard.selectStep(2);
       return ctx.wizard.next();
     });
     step1Handler.action('alwaysyes', async (ctx) => {
@@ -31,6 +31,15 @@ export class BlankScene extends Scene {
       ctx.reply('Введите Фамилию, Имя и Отчество клиента');
       return ctx.wizard.next();
     });
+
+    const phoneHandler = new Composer<MyContext>();
+    phoneHandler.hears(
+      /[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?/,
+      async (ctx) => {
+        ctx.session.client_name = ctx.message.text;
+        ctx.reply('Введите номер телефона клиента');
+        return ctx.wizard.next();
+      })
 
     const step2Handler = new Composer<MyContext>();
     step2Handler.action(['dpk', 'drops', 'channel', 'mi'], async (ctx) => {
@@ -65,9 +74,9 @@ export class BlankScene extends Scene {
       return ctx.wizard.next(); // Переходим к следующему шагу
     });
     step2Handler.hears(
-      /[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?/,
+      /\+?(\d{1,3})[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,9})/,
       async (ctx) => {
-        ctx.session.client_name = ctx.message.text;
+        ctx.session.phone = ctx.message.text;
         ctx.reply('Введите Продукт', {
           reply_markup: {
             inline_keyboard: [
@@ -78,7 +87,7 @@ export class BlankScene extends Scene {
             ],
           },
         });
-        ctx.wizard.selectStep(1);
+        ctx.wizard.selectStep(2);
         //запись ответа по кнопке в переменную
         return ctx.wizard.next();
       },
@@ -124,10 +133,11 @@ export class BlankScene extends Scene {
         message += `Срок: <b>${ctx.session.time}</b>\n`;
       } else {
         message += `Банк: <b>${ctx.session.bank}</b>\n`;
-        message += `ФИО: <b>${ctx.session.client_name}</b>\n`;
-        message += `Продукт: <b>${ctx.session.product}</b>\n`;
-        message += `Сумма: <b>${ctx.session.price}</b>\n`;
-        message += `Срок: <b>${ctx.session.time}</b>\n`;
+			message += `ФИО: <b>${ctx.session.client_name}</b>\n`;
+      message += `Телефон: <b>${ctx.session.phone}</b>\n`;
+			message += `Продукт: <b>${ctx.session.product}</b>\n`;
+			message += `Сумма: <b>${ctx.session.price}</b>\n`;
+			message += `Срок: <b>${ctx.session.time}</b>\n`;
       }
       ctx.reply(message, {
         reply_markup: {
@@ -155,11 +165,12 @@ export class BlankScene extends Scene {
 		  } else {
 			message += `Банк: <b>${ctx.session.bank}</b>\n`;
 			message += `ФИО: <b>${ctx.session.client_name}</b>\n`;
+      message += `Телефон: <b>${ctx.session.phone}</b>\n`;
 			message += `Продукт: <b>${ctx.session.product}</b>\n`;
 			message += `Сумма: <b>${ctx.session.price}</b>\n`;
 			message += `Срок: <b>${ctx.session.time}</b>\n`;
 		  }
-		ctx.telegram.sendMessage(603055492, message)
+		ctx.telegram.sendMessage(603055492, message, {parse_mode: 'HTML'})
         ctx.reply('Заявка отправлена');
         return ctx.scene.leave();
       } else {
@@ -190,6 +201,7 @@ export class BlankScene extends Scene {
         return ctx.wizard.next();
       },
       step1Handler,
+      phoneHandler,
       step2Handler,
       step3Handler,
       step5Handler,
