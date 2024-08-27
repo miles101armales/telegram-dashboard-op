@@ -9,7 +9,7 @@ import { SalesPlanService } from 'src/sales_plan/sales_plan.service';
 import { Logger } from '@nestjs/common';
 import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 import { format } from 'date-fns';
-import { ru } from 'date-fns/locale'
+import { ru } from 'date-fns/locale';
 
 export class LeaderboardCommand extends Command {
   private nowDateGc: string;
@@ -123,15 +123,17 @@ export class LeaderboardCommand extends Command {
     const timeZoneOffset = 5 * 60; // Разница в минутах между UTC и вашей временной зоной (+5 часов)
 
     const updatedAtDate = new Date(lastExportedRecord.updatedAt);
-    
+
     // Применяем смещение
     updatedAtDate.setMinutes(updatedAtDate.getMinutes() + timeZoneOffset);
-    const formattedDate = format(updatedAtDate, 'd MMMM yyyy г., HH:mm:ss', { locale: ru });
-    const percentage_plan = (this.fact / 21000000) * 100;
+    const formattedDate = format(updatedAtDate, 'd MMMM yyyy г., HH:mm:ss', {
+      locale: ru,
+    });
+    const percentage_plan = (this.fact / 19500000) * 100;
     //формируем сообщение
     const header = '⚡<b><u>Таблица лидеров</u></b>⚡\n\n'; // Заголовок
     const actual = `Актуально на ${formattedDate}\n\n`;
-    const planfact = `План/факт: <b>21000000 / ${this.fact.toString()}</b> (${percentage_plan.toFixed(1)}%)\n\n`; // Информация о плане/факте
+    const planfact = `План/факт: <b>19500000 / ${this.fact.toString()}</b> (${percentage_plan.toFixed(1)}%)\n\n`; // Информация о плане/факте
 
     const leaders = leaderboard
       .map((entry, index) => {
@@ -159,4 +161,3 @@ export class LeaderboardCommand extends Command {
 function utcToZonedTime(updatedAt: Date, timeZone: string) {
   throw new Error('Function not implemented.');
 }
-
