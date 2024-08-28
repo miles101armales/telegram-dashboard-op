@@ -1,4 +1,4 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { GetcourseApiService } from './getcourse_api.service';
 
 @Controller('getcourse')
@@ -24,5 +24,10 @@ export class GetcourseApiController {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  @Get('callback')
+  async getCallbackObject(@Query('sale') sale: any, @Query('user') user: any) {
+    return await this.getcourseApiService.getCallback(sale, user);
   }
 }

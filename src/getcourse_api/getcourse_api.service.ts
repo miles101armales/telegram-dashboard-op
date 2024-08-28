@@ -186,4 +186,8 @@ export class GetcourseApiService {
       console.error(error);
     }
   }
+
+  async getCallback(sale, user) {
+    console.log(sale, user);
+  }
 }
