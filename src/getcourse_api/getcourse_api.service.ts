@@ -130,13 +130,23 @@ export class GetcourseApiService {
     newData.forEach((item) => {
       const itemString = JSON.stringify(item[item.length - 2]);
 
+      console.log(item[15])
+
       if (
-        item[10] !== undefined &&
-        item[10] !== null &&
-        !isNaN(Number(item[10])) &&
-        Number(item[10]) > 1 &&
+        Number(item[15]) > 1 &&
         itemString.includes('Мотивация') &&
-        !itemString.includes('возврат')
+        !(
+          itemString.includes('Возврат осуществлён') ||
+          itemString.includes('Возврат переход в следующий поток') ||
+          itemString.includes('Возврат продление') ||
+          itemString.includes('Возврат продление месяц') ||
+          itemString.includes('Возврат продление неделя') ||
+          itemString.includes('Возврат_по_тэгу') ||
+          itemString.includes('Возврат_покупки_на_карту') ||
+          itemString.includes('Возврат_хэш_один') ||
+          itemString.includes('Необходим возврат') ||
+          itemString.includes('процесс возврата')
+        )
       ) {
         realArrOfObjects.push({
           idAzatGc: item[0],
