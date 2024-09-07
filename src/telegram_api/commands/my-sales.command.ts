@@ -195,7 +195,7 @@ export class MySalesCommand extends Command {
     const teamName = manager.team;
     const monthName = 'Август'; // Предположим, что это фиксированный месяц для примера
 
-    let replyMessage = `Статистика по твоей команде <b>${teamName} за ${monthName}</b>\n\n`;
+    let replyMessage = `Статистика по твоей команде <b>${teamName} за ${this.monthName}</b>\n\n`;
     replyMessage += `Объём продаж: ${totalSalesVolume.toFixed(2)}\n`;
     replyMessage += `Количество продаж: ${quantityOfSales}\n`;
     replyMessage += `Средний чек: ${avgCheck.toFixed(2)}\n`;

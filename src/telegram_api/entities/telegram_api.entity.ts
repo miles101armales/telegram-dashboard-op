@@ -12,7 +12,7 @@ export class TelegramApi {
   @Column()
   name: string;
 
-  @Column()
+  @Column({nullable: true})
   username: string;
 
   @Column({ default: false })

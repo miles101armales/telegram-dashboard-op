@@ -130,8 +130,6 @@ export class GetcourseApiService {
     newData.forEach((item) => {
       const itemString = JSON.stringify(item[item.length - 2]);
 
-      console.log(item[15])
-
       if (
         Number(item[15]) > 1 &&
         itemString.includes('Мотивация') &&
