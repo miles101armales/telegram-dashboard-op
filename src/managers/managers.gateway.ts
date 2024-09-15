@@ -7,12 +7,11 @@ import {
 import { Server } from 'socket.io';
 
 @WebSocketGateway({
-  cors: {
-    origin: '*', // разрешить запросы с этого адреса
+    cors: '*', // разрешить запросы с этого адреса
     methods: ['GET', 'POST'],
     credentials: true,
-  },
-})
+  })
+
 export class ManagersGateway {
   @WebSocketServer()
   server: Server;

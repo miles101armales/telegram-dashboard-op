@@ -15,7 +15,7 @@ export class Manager {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: 0})
   monthly_sales: number;
 
   @Column({ nullable: true })

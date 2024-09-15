@@ -4,12 +4,15 @@ import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
   app.enableCors({
-    origin: 'http://192.168.0.78', // замените на URL вашего клиента
+    origin: 
+      'https://miles101armales.github.io/'
+    ,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  app.use(cors());
+  app.use(cors())
   await app.listen(3000);
 }
 bootstrap();
