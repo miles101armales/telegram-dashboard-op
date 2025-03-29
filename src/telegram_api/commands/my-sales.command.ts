@@ -7,6 +7,7 @@ import { In, Repository } from 'typeorm';
 import { TelegramApi } from '../entities/telegram_api.entity';
 import { Logger } from '@nestjs/common';
 import { Sales } from 'src/sales_plan/entities/sales.entity';
+import { monthNames } from './constants';
 
 export class MySalesCommand extends Command {
   private readonly logger = new Logger(MySalesCommand.name);
@@ -27,28 +28,12 @@ export class MySalesCommand extends Command {
     const month = new Date(); // Создаем объект Date для текущей даты
     const month_formatted = month.toISOString().split('T')[0]; // Получаем дату в формате 'YYYY-MM-DD'
 
-    // Массив с названиями месяцев
-    const monthNames = [
-      'Январь',
-      'Февраль',
-      'Март',
-      'Апрель',
-      'Май',
-      'Июнь',
-      'Июль',
-      'Август',
-      'Сентябрь',
-      'Октябрь',
-      'Ноябрь',
-      'Декабрь',
-    ];
-
     // Получаем номер месяца из даты
     const monthNumber = new Date(month_formatted).getMonth();
 
     // Получаем название месяца из массива monthNames
     this.monthName = monthNames[monthNumber];
-    this.client.hears('⚡Мои закрытия' || 'Мои закрытия', async (ctx) => {
+    this.client.hears('⚡Мои закрытия', async (ctx) => {
       const authStatus = (await this.telegramApiRepository.findOne({
         where: { chat_id: ctx.chat.id.toString() },
       }))

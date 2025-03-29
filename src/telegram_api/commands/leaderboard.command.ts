@@ -10,6 +10,7 @@ import { Logger } from '@nestjs/common';
 import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { managerFullNameMap } from './constants';
 
 export class LeaderboardCommand extends Command {
   private nowDateGc: string;
@@ -150,6 +151,7 @@ export class LeaderboardCommand extends Command {
         } else {
           manager = entry.manager;
         }
+        manager = managerFullNameMap[entry.manager] ? managerFullNameMap[entry.manager] : entry.manager;
 
         return `${placeEmoji} <b>${manager}</b> | ${entry.sales.toLocaleString()} ₽`;
       })

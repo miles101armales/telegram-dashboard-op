@@ -80,8 +80,8 @@ export class GetcourseApiService {
     maxRetries: number,
     delayMs: number,
   ): Promise<AxiosResponse | undefined> {
-    const apiKey = this.configService.get('GC_API_KEY');
-    const PREFIX = this.configService.get('GC_PREFIX');
+    const apiKey = '3vcs4uNkexoUfNurL18DGOyHsAlZXu3R1HmZwerSzeGPe0s1ITej7YS3XX1SuqJZ2I3GWg1Ks52IXsiNx5wPKjRjUM1CmunIfJ9VnSnCmF948M5OVx9PlF6JvHLOKtyo';
+    const PREFIX = 'https://azatvaleev.getcourse.ru/pl/api/account';
     const makeRequest = async (): Promise<AxiosResponse | undefined> => {
       try {
         const result = await axios.get(
@@ -197,5 +197,12 @@ export class GetcourseApiService {
 
   async getCallback(sale, user) {
     console.log(sale, user);
+  }
+
+  async testApiFeature(link?: string, attribute?: string, value?: string) {
+    const apiKey = '3vcs4uNkexoUfNurL18DGOyHsAlZXu3R1HmZwerSzeGPe0s1ITej7YS3XX1SuqJZ2I3GWg1Ks52IXsiNx5wPKjRjUM1CmunIfJ9VnSnCmF948M5OVx9PlF6JvHLOKtyo';
+    const PREFIX = 'https://azatvaleev.getcourse.ru/pl/api/account';
+    const result = await axios.get(`${PREFIX}/users?key=${apiKey}&id=233753`);
+    return result
   }
 }

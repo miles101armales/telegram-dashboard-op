@@ -10,6 +10,30 @@ import { AllSales } from './entities/all-sales.entity';
 import { all } from 'axios';
 import { TelegramApiService } from 'src/telegram_api/telegram_api.service';
 import { TelegramApi } from 'src/telegram_api/entities/telegram_api.entity';
+import { ok } from 'assert';
+
+const fullNameMap: { [key: string]: string } = {
+  "Сергей": "Сергей Кириллов",
+  "Артур": "Ишкуватов Артур",
+  "Камилла": "Камилла Камилла Наилевна",
+  "Катя": "Катя Рафикова",
+  "Роберт": "Роберт",
+  "Тимофей": "Тимофей Иванов",
+  "Ринат": "Ринат Шарифуллин",
+  "Мансур": "Мансур Кильдебаев",
+  "Диана": "Диана Тагирова",
+  "Алсу": "Алсу Салимова",
+  "Данила": "Данила Щербаков",
+  "Денис": "Денис Иштуганов",
+  "Арман": "Арман Кузембаев",
+  "Стас": "Стас Власов",
+  "Алиса": "Алиса",
+  "Ксюша": "Ксюша Никитина",
+  "Фарида": "Фарида",
+  "Эльвина": "Эльвина",
+  "Рамиль": "Рамиль Ахмадеев",
+  "Радмир": "Радмир Байрамгулов"
+};
 
 @Injectable()
 export class SalesPlanService {

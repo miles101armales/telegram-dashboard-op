@@ -16,7 +16,6 @@ import { CongratulationCommand } from './commands/congratulation.command';
 import { AppealCommand } from './commands/appeal.command';
 import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 import { Sales } from 'src/sales_plan/entities/sales.entity';
-import { BlankScene } from './scenes/blank.scene';
 
 @Injectable()
 export class TelegramApiService {
@@ -41,7 +40,7 @@ export class TelegramApiService {
     private readonly salesRepository: Repository<Sales>,
   ) {
     this.client = new Telegraf<MyContext>(
-      this.configService.get('TELEGRAM_API_KEY'),
+      '7241388767:AAHvLhEArOjqqu4ITKjPnZ2krgtp4Wm7DiM'
     );
   }
   async onApplicationBootstrap() {
@@ -82,7 +81,6 @@ export class TelegramApiService {
 
       this.scenes = [
         new AppealCommand(this.client),
-        new BlankScene(this.client),
       ];
       for (const scene of this.scenes) {
         scene.handle();
@@ -91,13 +89,19 @@ export class TelegramApiService {
       const stage = new Scenes.Stage(this.scenesNames);
       this.client.use(session());
       this.client.use(stage.middleware());
+
+      // Обращение к программисту
       this.client.hears('Написать обращение', (ctx) =>
         ctx.scene.enter('appeal'),
       );
       this.client.hears('Запросить анкету', (ctx) => {
         ctx.scene.enter('blank');
       });
+      this.client.command('appeal', (ctx) =>
+        ctx.scene.enter('appeal'),
+      );
 
+      // Запуск бота
       this.client.launch();
       this.logger.log('Telegram Bot initialized');
       const clients = await this.telegramRepository.find();
@@ -156,6 +160,7 @@ export class TelegramApiService {
     } catch (error) {}
   }
 
+  // Колбэк о закрытии клиента
   async sendUpdate(managerName: string, profit: string) {
     this.managerName = managerName;
     const clients = await this.telegramRepository.find();

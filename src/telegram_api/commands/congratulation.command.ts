@@ -8,6 +8,7 @@ import { TelegramApi } from '../entities/telegram_api.entity';
 import { MyContext } from '../interfaces/context.interface';
 import { TelegramApiService } from '../telegram_api.service';
 import { ConfigService } from '@nestjs/config';
+import { managerMap } from './constants';
 
 export class CongratulationCommand extends Command {
   private readonly logger = new Logger(CongratulationCommand.name);
@@ -54,7 +55,7 @@ export class CongratulationCommand extends Command {
     const checkformanager = message?.text?.split(
       /[\uD800-\uDBFF][\uDC00-\uDFFF]|\s/,
     )[1];
-    return this.managerMap[checkformanager] || null;
+    return managerMap[checkformanager] || null;
   }
 
   private async sendCongratulation(ctx, managerName: string): Promise<void> {

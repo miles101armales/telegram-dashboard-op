@@ -8,7 +8,7 @@ import { Logger } from '@nestjs/common';
 import {
   buttons_for_admins,
   buttons_for_managers,
-  buttons_for_timofey,
+  buttons_for_ROP,
 } from './constants';
 import { Manager } from 'src/managers/entities/manager.entity';
 
@@ -56,21 +56,8 @@ export class StartCommand extends Command {
     const authStatus = await this.telegramRepository.findOne({
       where: { chat_id: ctx.chat?.id.toString() },
     });
-    console.log(authStatus);
-    const team = await this.managerRepository.findOne({
-      where: { name: authStatus.manager },
-    });
-    console.log(team);
     if (authStatus.authorization) {
-      if (authStatus.role === 'manager' && team.team == 'Тимофей') {
-        ctx.reply('Выберите команду:', {
-          reply_markup: {
-            keyboard: buttons_for_timofey,
-            resize_keyboard: true,
-          },
-        });
-      }
-      if (authStatus.role === 'manager' && team.team == 'Ринат') {
+      if (authStatus.role === 'manager') {
         ctx.reply('Выберите команду:', {
           reply_markup: {
             keyboard: buttons_for_managers,
@@ -82,6 +69,14 @@ export class StartCommand extends Command {
         ctx.reply('Выберите команду:', {
           reply_markup: {
             keyboard: buttons_for_admins,
+            resize_keyboard: true,
+          },
+        });
+      }
+      if (authStatus.role === 'ROP') {
+        ctx.reply('Выберите команду:', {
+          reply_markup: {
+            keyboard: buttons_for_ROP,
             resize_keyboard: true,
           },
         });
