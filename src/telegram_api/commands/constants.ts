@@ -46,6 +46,11 @@ export const managerMap: { [key: string]: string } = {
   Георгий: "Георгий Елисеев",
   Ирина: "Ирина Шилина",
   Елена: "Елена Большаева",
+  Oksana: "Oksana Панченкова",
+  Динара: "Динара Катунина",
+  Роман: "Роман Олейников",
+  Иван: "Иван Артамонов",
+  Pavel: "Pavel Франчишин"
 };
 
 export const managerFullNameMap: { [key: string]: string } = {
@@ -54,7 +59,7 @@ export const managerFullNameMap: { [key: string]: string } = {
   Алиса: 'Aлиса Ахмерова',
   Эльвина: 'Эльвина Максимова',
   Зифа: 'Зифа Хамидуллина',
-  'Екатерина Bekasova': 'Екатерина Бекасова'
+  'Екатерина Bekasova': 'Екатерина Бекасова',
 };
 
 export const monthNames = [
