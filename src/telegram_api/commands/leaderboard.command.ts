@@ -123,7 +123,10 @@ export class LeaderboardCommand extends Command {
     });
     const timeZoneOffset = 5 * 60; // Разница в минутах между UTC и вашей временной зоной (+5 часов)
 
-    const updatedAtDate = new Date(lastExportedRecord.updatedAt);
+    // Используем текущую дату, если нет записей
+    const updatedAtDate = lastExportedRecord 
+      ? new Date(lastExportedRecord.updatedAt)
+      : new Date();
 
     // Применяем смещение
     updatedAtDate.setMinutes(updatedAtDate.getMinutes() + timeZoneOffset);
