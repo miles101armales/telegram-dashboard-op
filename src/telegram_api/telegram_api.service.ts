@@ -41,7 +41,7 @@ export class TelegramApiService {
     private readonly salesRepository: Repository<Sales>,
   ) {
     this.client = new Telegraf<MyContext>(
-      '7241388767:AAHvLhEArOjqqu4ITKjPnZ2krgtp4Wm7DiM'
+      this.configService.get('TELEGRAM_API_KEY')
     );
   }
   async onApplicationBootstrap() {
