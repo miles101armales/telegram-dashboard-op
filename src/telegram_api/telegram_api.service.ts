@@ -16,6 +16,7 @@ import { CongratulationCommand } from './commands/congratulation.command';
 import { AppealCommand } from './commands/appeal.command';
 import { GetcourseApi } from 'src/getcourse_api/entities/getcourse_api.entity';
 import { Sales } from 'src/sales_plan/entities/sales.entity';
+import { NoticeCommand } from './commands/notice.command';
 
 @Injectable()
 export class TelegramApiService {
@@ -70,7 +71,6 @@ export class TelegramApiService {
         ),
         new CongratulationCommand(
           this.client,
-          this.configService,
           this.managersRepository,
           this.telegramRepository,
         ),
@@ -81,6 +81,7 @@ export class TelegramApiService {
 
       this.scenes = [
         new AppealCommand(this.client),
+        new NoticeCommand(this.client, this.telegramRepository),
       ];
       for (const scene of this.scenes) {
         scene.handle();
@@ -99,6 +100,9 @@ export class TelegramApiService {
       });
       this.client.command('appeal', (ctx) =>
         ctx.scene.enter('appeal'),
+      );
+      this.client.command('notice', (ctx) =>
+        ctx.scene.enter('notice'),
       );
 
       // Запуск бота
