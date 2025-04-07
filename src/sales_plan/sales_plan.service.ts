@@ -39,6 +39,7 @@ const fullNameMap: { [key: string]: string } = {
 export class SalesPlanService {
   private readonly telegramApiService: TelegramApiService;
   private readonly logger = new Logger(SalesPlanService.name);
+
   constructor(
     private readonly configService: ConfigService,
     private readonly getcourseApiService: GetcourseApiService,
@@ -58,6 +59,63 @@ export class SalesPlanService {
       this.exportsRepository,
       this.salesRepository,
     );
+    this.checkDatabaseConnection();
+  }
+
+  /**
+   * Безопасно преобразует строку в число
+   * @param value Строка для преобразования
+   * @returns Число или null, если преобразование невозможно
+   */
+  private safeParseNumber(value: string | number | null | undefined): number | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    // Если уже число, возвращаем как есть
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    // Заменяем запятую на точку для корректной обработки десятичных чисел
+    const normalizedValue = value.toString().replace(',', '.');
+    
+    // Пытаемся преобразовать в число
+    const parsedValue = parseFloat(normalizedValue);
+    
+    // Проверяем, что получили корректное число
+    if (isNaN(parsedValue)) {
+      this.logger.warn(`Failed to parse number from value: ${value}`);
+      return null;
+    }
+
+    return parsedValue;
+  }
+
+  private async checkDatabaseConnection() {
+    try {
+      await this.salesRepository.query('SELECT 1');
+      this.logger.log('Database connection successful');
+    } catch (error) {
+      this.logger.error(`Database connection failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  private validateSaleData(sale: any) {
+    if (!sale.idAzatGc || !sale.productName || !sale.managerName) {
+      throw new Error('Missing required sale data');
+    }
+    
+    // Используем новую функцию для проверки profit
+    const profitValue = this.safeParseNumber(sale.profit);
+    if (profitValue === null) {
+      throw new Error('Invalid profit value');
+    }
+    
+    if (!sale.payedAt || isNaN(Date.parse(sale.payedAt))) {
+      throw new Error('Invalid payedAt date');
+    }
   }
 
   async postSale() {
@@ -87,33 +145,84 @@ export class SalesPlanService {
     payedAt: string;
     tags: string;
   }) {
-    this.logger.log(`New sale callback to update with id: ${sale.idAzatGc}`);
-    const response = await this.getcourseApiService.requestExportId();
-    await this.getcourseApiService.createExportId(response, 3, 6000);
-    setTimeout(async () => {
-      const findedExports =
-        await this.getcourseApiService.findByStatus('creating');
-      this.logger.log(`Found ${findedExports.length} exports`);
-      if (!findedExports) {
-        console.log('Экспортов для выгрузки не найдено');
+    this.logger.log(`Starting sale processing: ${JSON.stringify(sale)}`);
+    
+    try {
+      // Валидация данных
+      this.validateSaleData(sale);
+
+      // Преобразуем profit в число для сохранения
+      const profitValue = this.safeParseNumber(sale.profit);
+      if (profitValue === null) {
+        throw new Error('Invalid profit value');
       }
-      for (const _export of findedExports) {
-        const result = await this.getcourseApiService.makeExport(
-          _export.export_id,
-          3,
-          10000,
-        );
-        this.logger.log(
-          `Export data with ID: ${_export.export_id} has been exported`,
-        );
-        await this.getcourseApiService.writeExportExistData(result);
-      }
+
+      // Сохраняем продажу в базу данных в рамках транзакции
+      await this.salesRepository.manager.transaction(async transactionalEntityManager => {
+        const newSale = transactionalEntityManager.create(Sales, {
+          idAzatGc: sale.idAzatGc,
+          productName: sale.productName,
+          managerName: sale.managerName,
+          profit: profitValue.toString(), // Сохраняем как строку, но уже проверенную
+          payedAt: sale.payedAt,
+          tags: sale.tags
+        });
+        
+        await transactionalEntityManager.save(newSale);
+        this.logger.log(`Sale saved to database: ${sale.idAzatGc} with profit: ${profitValue}`);
+      });
+
+      // Запрашиваем экспорт
+      const response = await this.getcourseApiService.requestExportId();
+      await this.getcourseApiService.createExportId(response, 3, 6000);
+
+      // Обрабатываем экспорт после задержки
       setTimeout(async () => {
-        await this.getManagers();
-        await this.getMonthlySales();
-        await this.telegramApiService.sendUpdate(sale.managerName, sale.profit);
-      }, 10000);
-    }, 120000);
+        try {
+          const findedExports = await this.getcourseApiService.findByStatus('creating');
+          this.logger.log(`Found ${findedExports?.length || 0} exports`);
+
+          if (!findedExports?.length) {
+            this.logger.warn('No exports found for processing');
+            return;
+          }
+
+          for (const _export of findedExports) {
+            try {
+              const result = await this.getcourseApiService.makeExport(
+                _export.export_id,
+                3,
+                10000,
+              );
+              this.logger.log(`Export data with ID: ${_export.export_id} has been exported`);
+              await this.getcourseApiService.writeExportExistData(result);
+            } catch (exportError) {
+              this.logger.error(`Failed to process export ${_export.export_id}: ${exportError.message}`);
+            }
+          }
+
+          // Обновляем статистику после задержки
+          setTimeout(async () => {
+            try {
+              await this.getManagers();
+              await this.getMonthlySales();
+              // Отправляем округленное значение profit для уведомления
+              await this.telegramApiService.sendUpdate(sale.managerName, Math.round(profitValue).toString());
+              this.logger.log(`Successfully completed all updates for sale ${sale.idAzatGc}`);
+            } catch (updateError) {
+              this.logger.error(`Failed to update statistics: ${updateError.message}`);
+            }
+          }, 10000);
+        } catch (exportError) {
+          this.logger.error(`Export processing failed: ${exportError.message}`);
+        }
+      }, 120000);
+
+    } catch (error) {
+      this.logger.error(`Sale processing failed: ${error.message}`);
+      this.logger.error(`Stack trace: ${error.stack}`);
+      throw error;
+    }
   }
 
   async getManagers() {
@@ -151,23 +260,36 @@ export class SalesPlanService {
           where: { idAzatGc: Number(idAzatGc) },
         });
 
-        if (allsale.profit !== null) {
-          motivation_sales += Number(Number(allsale.profit).toFixed(0));
-          quantityOfMotivationSales += 1;
+        if (allsale && allsale.profit !== null) {
+          // Используем безопасное преобразование числа
+          const profitValue = this.safeParseNumber(allsale.profit);
+          if (profitValue !== null) {
+            motivation_sales += profitValue;
+            quantityOfMotivationSales += 1;
+            this.logger.log(`Added profit ${profitValue} for sale ${idAzatGc}`);
+          } else {
+            this.logger.warn(`Invalid profit value for sale ${idAzatGc}: ${allsale.profit}`);
+          }
         }
       }
 
-      const avgPayedPrice = motivation_sales / quantityOfMotivationSales;
+      const avgPayedPrice = quantityOfMotivationSales > 0 
+        ? motivation_sales / quantityOfMotivationSales 
+        : 0;
+
+      this.logger.log(`Manager ${manager.name}: total sales=${motivation_sales}, quantity=${quantityOfMotivationSales}, avg=${avgPayedPrice}`);
+
+      // Округляем значения перед сохранением в базу данных
+      const roundedMonthlySales = Math.round(motivation_sales);
+      const roundedAvgPayedPrice = Math.round(avgPayedPrice);
 
       this.managersRepository.update(
         { name: manager.name },
         {
-          monthly_sales: motivation_sales,
+          monthly_sales: roundedMonthlySales,
           quantityOfSales: quantityOfMotivationSales,
-          avgPayedPrice: Math.round(avgPayedPrice)
-            ? Math.round(avgPayedPrice)
-            : 0,
-        }, // Замените monthly_sales на нужное поле, если требуется
+          avgPayedPrice: roundedAvgPayedPrice || 0,
+        },
       );
     }
   }

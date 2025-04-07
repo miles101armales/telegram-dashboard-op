@@ -128,10 +128,11 @@ export class GetcourseApiService {
     const realArrOfObjects: any[] = [];
 
     newData.forEach((item) => {
-      const itemString = JSON.stringify(item[item.length - 2]);
+      const itemString = JSON.stringify(item[25]);
 
+      console.log(Number(item[13]));
       if (
-        Number(item[15]) > 1 &&
+        Number(item[13]) > 1 &&
         itemString.includes('Мотивация') &&
         !(
           itemString.includes('Возврат осуществлён') ||
@@ -148,11 +149,11 @@ export class GetcourseApiService {
       ) {
         realArrOfObjects.push({
           idAzatGc: item[0],
-          productName: item[8],
-          payedAt: item[7],
-          profit: item[15],
-          tags: item[item.length - 2],
-          managerName: item[19],
+          productName: item[2],
+          payedAt: item[9],
+          profit: item[13],
+          tags: item[25],
+          managerName: item[16],
         });
       }
     });

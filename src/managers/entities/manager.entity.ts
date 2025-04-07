@@ -15,22 +15,22 @@ export class Manager {
   @Column()
   name: string;
 
-  @Column({ nullable: true, default: 0})
+  @Column({ nullable: true, default: 0, type: 'integer' })
   monthly_sales: number;
 
   @Column({ nullable: true })
   personal_monthly_goal: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'integer' })
   salary: number;
 
   @Column({ nullable: true })
   team: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'integer' })
   quantityOfSales: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'integer' })
   avgPayedPrice: number;
 
   @UpdateDateColumn({ nullable: true })
